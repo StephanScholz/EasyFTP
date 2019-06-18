@@ -41,6 +41,8 @@ namespace EasyFTP
 
             // Load all drives
             string[] drives = Environment.GetLogicalDrives();
+            // Update textbox
+            tbLocalPath.Text = drives[0];
             foreach (string drive in drives)
             {
                 DirectoryInfo info = new DirectoryInfo(drive);
@@ -62,7 +64,7 @@ namespace EasyFTP
             tvRemote.Nodes.Add(rootNode);
         }
 
-        /* does basically the same as GetDirectories(), but here with a FTP-Directory structure */
+        /* Creates all sub-nodes in the Remote Tree, specified by the parameter "subDirs" and adds them to the nodeToAddTo */
         private void GetFtpDirectories(FtpListItem[] subDirs, TreeNode nodeToAddTo)
         {
             TreeNode aNode;
@@ -91,32 +93,42 @@ namespace EasyFTP
             ListViewItem.ListViewSubItem[] subItems;
             ListViewItem item = null;
             
-            foreach (FileInfo file in nodeDirInfo.GetFiles())
+            try
             {
-                item = new ListViewItem(file.Name, 1);
-                // Adding information about the full path on the file system to the ListViewItem.
-                item.Tag = file.FullName;
+                foreach (FileInfo file in nodeDirInfo.GetFiles())
+                {
+                    item = new ListViewItem(file.Name, 1);
+                    // Adding information about the full path on the file system to the ListViewItem.
+                    item.Tag = file.FullName;
 
-                subItems = new ListViewItem.ListViewSubItem[] {
+                    subItems = new ListViewItem.ListViewSubItem[] {
                     new ListViewItem.ListViewSubItem(item, "File"),
                     new ListViewItem.ListViewSubItem(item, file.LastAccessTime.ToShortDateString())
                 };
 
-                item.SubItems.AddRange(subItems);
-                listViewLocal.Items.Add(item);
-            }
+                    item.SubItems.AddRange(subItems);
+                    listViewLocal.Items.Add(item);
+                }
 
-            listViewLocal.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
+                listViewLocal.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                //MessageBox.Show("", "Not Authorized", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
         }
 
         /* Does the same as PopulateListViewLocal(), but with a Ftp directory structure */
         private void PopulateListViewRemote(TreeNode newSelected)
         {
+            // clear old items
             listViewRemote.Items.Clear();
             string root = (string)newSelected.Tag;
             ListViewItem.ListViewSubItem[] subItems;
             ListViewItem lvItem = null;
 
+            // load new ones
             foreach (FtpListItem item in ftp.GetDirectoryListing(root))
             {
                 if (item.Type == FtpFileSystemObjectType.Directory)
@@ -147,7 +159,7 @@ namespace EasyFTP
             listViewRemote.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
         }
 
-        /* Gradualy fill the subdir-nodes, when the user clicks on them
+        /* Gradualy fill the subdir-nodes, when the user expands to them
          */
         private void tvLocal_BeforeExpand(object sender, TreeViewCancelEventArgs e)
         {
@@ -216,7 +228,6 @@ namespace EasyFTP
             if (cred != null)
                 if (ftp.InitFtpServerSession(cred))
                     sessionTimer.Start();
-            FtpTrace.WriteLine("----------------------------------------Timer Started-------------------------------------------------");
 
             PopulateTreeViewRemote();
 
@@ -254,6 +265,9 @@ namespace EasyFTP
             CleanUp();
         }
 
+        /* Uploads a file from the local environment to the remote ftp server.
+         * As of now, does not work and needs major improvements!
+         */
         private void uploadFile_Click(object sender, EventArgs e)
         {
             resetTimer();
@@ -291,13 +305,12 @@ namespace EasyFTP
 
         /* Called every 10 Minutes, when the user is in idle state
          * Intervals cannot be changed and are hardcoded. No transaction
-         * should take more than 10 minutes, because transaction will
-         * put the user in idle.
+         * should take more than 10 minutes, because during transaction the user
+         * will be in idle state.
          */
         private void sessionTimer_Tick(object sender, EventArgs e)
         {
             CleanUp();
-            FtpTrace.WriteLine("--------------------------------------------------Timer stopped---------------------------------------------------");
             sessionTimer.Stop();
         }
     }
