@@ -1,0 +1,2 @@
+# EasyFTP
+An FTP-Manager
