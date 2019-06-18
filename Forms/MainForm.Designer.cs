@@ -31,6 +31,8 @@
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.tbLocalPath = new System.Windows.Forms.TextBox();
+            this.label2 = new System.Windows.Forms.Label();
             this.splitContainerLocal = new System.Windows.Forms.SplitContainer();
             this.tvLocal = new System.Windows.Forms.TreeView();
             this.imageList1 = new System.Windows.Forms.ImageList(this.components);
@@ -39,7 +41,9 @@
             this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.splitContainer1 = new System.Windows.Forms.SplitContainer();
+            this.tbRemotePath = new System.Windows.Forms.TextBox();
+            this.label3 = new System.Windows.Forms.Label();
+            this.splitContainerRemote = new System.Windows.Forms.SplitContainer();
             this.tvRemote = new System.Windows.Forms.TreeView();
             this.listViewRemote = new System.Windows.Forms.ListView();
             this.columnHeader4 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -66,10 +70,10 @@
             this.splitContainerLocal.Panel2.SuspendLayout();
             this.splitContainerLocal.SuspendLayout();
             this.groupBox2.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
-            this.splitContainer1.Panel1.SuspendLayout();
-            this.splitContainer1.Panel2.SuspendLayout();
-            this.splitContainer1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainerRemote)).BeginInit();
+            this.splitContainerRemote.Panel1.SuspendLayout();
+            this.splitContainerRemote.Panel2.SuspendLayout();
+            this.splitContainerRemote.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.toolStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -77,18 +81,38 @@
             // groupBox1
             // 
             this.groupBox1.Anchor = System.Windows.Forms.AnchorStyles.Top;
+            this.groupBox1.Controls.Add(this.tbLocalPath);
+            this.groupBox1.Controls.Add(this.label2);
             this.groupBox1.Controls.Add(this.splitContainerLocal);
-            this.groupBox1.Location = new System.Drawing.Point(12, 61);
+            this.groupBox1.Location = new System.Drawing.Point(12, 72);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(353, 395);
+            this.groupBox1.Size = new System.Drawing.Size(353, 414);
             this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "Local Machine";
+            // 
+            // tbLocalPath
+            // 
+            this.tbLocalPath.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
+            this.tbLocalPath.Location = new System.Drawing.Point(3, 34);
+            this.tbLocalPath.Name = "tbLocalPath";
+            this.tbLocalPath.ReadOnly = true;
+            this.tbLocalPath.Size = new System.Drawing.Size(347, 20);
+            this.tbLocalPath.TabIndex = 2;
+            // 
+            // label2
+            // 
+            this.label2.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(6, 18);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(80, 13);
+            this.label2.TabIndex = 1;
+            this.label2.Text = "Local Machine:";
             // 
             // splitContainerLocal
             // 
-            this.splitContainerLocal.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.splitContainerLocal.Location = new System.Drawing.Point(3, 16);
+            this.splitContainerLocal.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
+            this.splitContainerLocal.Location = new System.Drawing.Point(3, 60);
             this.splitContainerLocal.Name = "splitContainerLocal";
             this.splitContainerLocal.Orientation = System.Windows.Forms.Orientation.Horizontal;
             // 
@@ -99,21 +123,22 @@
             // splitContainerLocal.Panel2
             // 
             this.splitContainerLocal.Panel2.Controls.Add(this.listViewLocal);
-            this.splitContainerLocal.Size = new System.Drawing.Size(347, 376);
-            this.splitContainerLocal.SplitterDistance = 102;
+            this.splitContainerLocal.Size = new System.Drawing.Size(347, 348);
+            this.splitContainerLocal.SplitterDistance = 149;
             this.splitContainerLocal.TabIndex = 0;
             // 
             // tvLocal
             // 
             this.tvLocal.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tvLocal.ImageIndex = 0;
+            this.tvLocal.ImageIndex = 2;
             this.tvLocal.ImageList = this.imageList1;
             this.tvLocal.Location = new System.Drawing.Point(0, 0);
             this.tvLocal.Name = "tvLocal";
-            this.tvLocal.SelectedImageIndex = 0;
-            this.tvLocal.Size = new System.Drawing.Size(347, 102);
+            this.tvLocal.SelectedImageIndex = 2;
+            this.tvLocal.Size = new System.Drawing.Size(347, 149);
             this.tvLocal.TabIndex = 1;
-            this.tvLocal.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.treeViewLocal_NodeMouseClick);
+            this.tvLocal.BeforeExpand += new System.Windows.Forms.TreeViewCancelEventHandler(this.tvLocal_BeforeExpand);
+            this.tvLocal.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.tvLocal_NodeMouseClick);
             // 
             // imageList1
             // 
@@ -121,6 +146,7 @@
             this.imageList1.TransparentColor = System.Drawing.Color.Transparent;
             this.imageList1.Images.SetKeyName(0, "Folder.png");
             this.imageList1.Images.SetKeyName(1, "Document.png");
+            this.imageList1.Images.SetKeyName(2, "Drive.png");
             // 
             // listViewLocal
             // 
@@ -132,7 +158,7 @@
             this.listViewLocal.Location = new System.Drawing.Point(0, 0);
             this.listViewLocal.MultiSelect = false;
             this.listViewLocal.Name = "listViewLocal";
-            this.listViewLocal.Size = new System.Drawing.Size(347, 270);
+            this.listViewLocal.Size = new System.Drawing.Size(347, 195);
             this.listViewLocal.SmallImageList = this.imageList1;
             this.listViewLocal.TabIndex = 2;
             this.listViewLocal.UseCompatibleStateImageBehavior = false;
@@ -153,31 +179,51 @@
             // groupBox2
             // 
             this.groupBox2.Anchor = System.Windows.Forms.AnchorStyles.Top;
-            this.groupBox2.Controls.Add(this.splitContainer1);
-            this.groupBox2.Location = new System.Drawing.Point(449, 61);
+            this.groupBox2.Controls.Add(this.tbRemotePath);
+            this.groupBox2.Controls.Add(this.label3);
+            this.groupBox2.Controls.Add(this.splitContainerRemote);
+            this.groupBox2.Location = new System.Drawing.Point(435, 72);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(339, 395);
+            this.groupBox2.Size = new System.Drawing.Size(353, 414);
             this.groupBox2.TabIndex = 3;
             this.groupBox2.TabStop = false;
-            this.groupBox2.Text = "Remote Machine";
             // 
-            // splitContainer1
+            // tbRemotePath
             // 
-            this.splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.splitContainer1.Location = new System.Drawing.Point(3, 16);
-            this.splitContainer1.Name = "splitContainer1";
-            this.splitContainer1.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            this.tbRemotePath.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
+            this.tbRemotePath.Location = new System.Drawing.Point(3, 34);
+            this.tbRemotePath.Name = "tbRemotePath";
+            this.tbRemotePath.ReadOnly = true;
+            this.tbRemotePath.Size = new System.Drawing.Size(347, 20);
+            this.tbRemotePath.TabIndex = 2;
             // 
-            // splitContainer1.Panel1
+            // label3
             // 
-            this.splitContainer1.Panel1.Controls.Add(this.tvRemote);
+            this.label3.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(6, 18);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(91, 13);
+            this.label3.TabIndex = 1;
+            this.label3.Text = "Remote Machine:";
             // 
-            // splitContainer1.Panel2
+            // splitContainerRemote
             // 
-            this.splitContainer1.Panel2.Controls.Add(this.listViewRemote);
-            this.splitContainer1.Size = new System.Drawing.Size(333, 376);
-            this.splitContainer1.SplitterDistance = 102;
-            this.splitContainer1.TabIndex = 0;
+            this.splitContainerRemote.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
+            this.splitContainerRemote.Location = new System.Drawing.Point(3, 60);
+            this.splitContainerRemote.Name = "splitContainerRemote";
+            this.splitContainerRemote.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            // 
+            // splitContainerRemote.Panel1
+            // 
+            this.splitContainerRemote.Panel1.Controls.Add(this.tvRemote);
+            // 
+            // splitContainerRemote.Panel2
+            // 
+            this.splitContainerRemote.Panel2.Controls.Add(this.listViewRemote);
+            this.splitContainerRemote.Size = new System.Drawing.Size(347, 348);
+            this.splitContainerRemote.SplitterDistance = 149;
+            this.splitContainerRemote.TabIndex = 0;
             // 
             // tvRemote
             // 
@@ -187,7 +233,7 @@
             this.tvRemote.Location = new System.Drawing.Point(0, 0);
             this.tvRemote.Name = "tvRemote";
             this.tvRemote.SelectedImageIndex = 0;
-            this.tvRemote.Size = new System.Drawing.Size(333, 102);
+            this.tvRemote.Size = new System.Drawing.Size(347, 149);
             this.tvRemote.TabIndex = 4;
             this.tvRemote.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.treeViewRemote_NodeMouseClick);
             // 
@@ -201,7 +247,7 @@
             this.listViewRemote.Location = new System.Drawing.Point(0, 0);
             this.listViewRemote.MultiSelect = false;
             this.listViewRemote.Name = "listViewRemote";
-            this.listViewRemote.Size = new System.Drawing.Size(333, 270);
+            this.listViewRemote.Size = new System.Drawing.Size(347, 195);
             this.listViewRemote.SmallImageList = this.imageList1;
             this.listViewRemote.TabIndex = 5;
             this.listViewRemote.UseCompatibleStateImageBehavior = false;
@@ -265,7 +311,7 @@
             // 
             this.uploadFiletoolStripMenuItem.Enabled = false;
             this.uploadFiletoolStripMenuItem.Name = "uploadFiletoolStripMenuItem";
-            this.uploadFiletoolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.uploadFiletoolStripMenuItem.Size = new System.Drawing.Size(133, 22);
             this.uploadFiletoolStripMenuItem.Text = "Upload File";
             this.uploadFiletoolStripMenuItem.Click += new System.EventHandler(this.uploadFile_Click);
             // 
@@ -328,9 +374,9 @@
             // 
             // EasyConsole
             // 
-            this.EasyConsole.Location = new System.Drawing.Point(15, 480);
+            this.EasyConsole.Location = new System.Drawing.Point(15, 505);
             this.EasyConsole.Name = "EasyConsole";
-            this.EasyConsole.Size = new System.Drawing.Size(770, 119);
+            this.EasyConsole.Size = new System.Drawing.Size(770, 103);
             this.EasyConsole.TabIndex = 6;
             this.EasyConsole.Text = "";
             this.EasyConsole.WordWrap = false;
@@ -338,7 +384,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(12, 464);
+            this.label1.Location = new System.Drawing.Point(12, 489);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(81, 13);
             this.label1.TabIndex = 22;
@@ -366,15 +412,17 @@
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Main_FormClosing);
             this.Load += new System.EventHandler(this.Form1_Load);
             this.groupBox1.ResumeLayout(false);
+            this.groupBox1.PerformLayout();
             this.splitContainerLocal.Panel1.ResumeLayout(false);
             this.splitContainerLocal.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainerLocal)).EndInit();
             this.splitContainerLocal.ResumeLayout(false);
             this.groupBox2.ResumeLayout(false);
-            this.splitContainer1.Panel1.ResumeLayout(false);
-            this.splitContainer1.Panel2.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
-            this.splitContainer1.ResumeLayout(false);
+            this.groupBox2.PerformLayout();
+            this.splitContainerRemote.Panel1.ResumeLayout(false);
+            this.splitContainerRemote.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainerRemote)).EndInit();
+            this.splitContainerRemote.ResumeLayout(false);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.toolStrip1.ResumeLayout(false);
@@ -394,7 +442,7 @@
         private System.Windows.Forms.ColumnHeader columnHeader2;
         private System.Windows.Forms.ColumnHeader columnHeader3;
         private System.Windows.Forms.GroupBox groupBox2;
-        private System.Windows.Forms.SplitContainer splitContainer1;
+        private System.Windows.Forms.SplitContainer splitContainerRemote;
         private System.Windows.Forms.TreeView tvRemote;
         private System.Windows.Forms.ListView listViewRemote;
         private System.Windows.Forms.ColumnHeader columnHeader4;
@@ -415,6 +463,10 @@
         private System.Windows.Forms.ToolStripButton tsUpload;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripMenuItem uploadFiletoolStripMenuItem;
+        private System.Windows.Forms.TextBox tbLocalPath;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.TextBox tbRemotePath;
+        private System.Windows.Forms.Label label3;
     }
 }
 

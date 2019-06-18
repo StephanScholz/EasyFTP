@@ -27,6 +27,9 @@ namespace EasyFTP
             ftp = new FtpOperations();
         }
 
+        // Placeholder for subdirs that have not been opened (yet).
+        private const string PLACEHOLDER = "...";
+
         private void Form1_Load(object sender, EventArgs e)
         {
             // custom debug console for FTP-connections
@@ -35,55 +38,28 @@ namespace EasyFTP
             FtpTrace.LogUserName = false;   // hide FTP user names
             FtpTrace.LogPassword = false;   // hide FTP passwords
             FtpTrace.LogIP = false; 	// hide FTP server IP addresses
-            PopulateTreeViewLocal();
-        }
 
-        /* Populates the TreeView with a file structure, specified by a rootNode.
-         * Called once at the start of the program.
-         * Major improvements needed*/
-        private void PopulateTreeViewLocal(string path = @"..\..")
-        {
-            TreeNode rootNode;
-
-            DirectoryInfo info = new DirectoryInfo(path);
-            if (info.Exists)
+            // Load all drives
+            string[] drives = Environment.GetLogicalDrives();
+            foreach (string drive in drives)
             {
-                rootNode = new TreeNode(info.Name);
-                rootNode.Tag = info;
-                GetDirectories(info.GetDirectories(), rootNode);
-                tvLocal.Nodes.Add(rootNode);
+                DirectoryInfo info = new DirectoryInfo(drive);
+                if (info.Exists)
+                {
+                    TreeNode rootNode = new TreeNode(info.Name);
+                    rootNode.Tag = info;
+                    tvLocal.Nodes.Add(rootNode);
+                    rootNode.Nodes.Add(PLACEHOLDER);
+                }
             }
         }
+        
         private void PopulateTreeViewRemote()
         {
             TreeNode rootNode = new TreeNode("/");
             rootNode.Tag = "/";
             GetFtpDirectories(ftp.GetDirectoryListing("/"), rootNode);
             tvRemote.Nodes.Add(rootNode);
-        }
-
-        /* Get specific sub-directories and create a node in the local TreeView for them.
-         * This method is in early state and can be very buggy. Improvements needed.
-         */
-        private void GetDirectories(DirectoryInfo[] subDirs,
-            TreeNode nodeToAddTo)
-        {
-            TreeNode aNode;
-            DirectoryInfo[] subSubDirs;
-            foreach (DirectoryInfo subDir in subDirs)
-            {
-                aNode = new TreeNode(subDir.Name, 0, 0);
-                aNode.Tag = subDir;
-                aNode.ImageKey = "folder";
-
-                subSubDirs = subDir.GetDirectories();
-                if (subSubDirs.Length != 0)
-                {
-                    GetDirectories(subSubDirs, aNode);
-                }
-
-                nodeToAddTo.Nodes.Add(aNode);
-            }
         }
 
         /* does basically the same as GetDirectories(), but here with a FTP-Directory structure */
@@ -106,49 +82,15 @@ namespace EasyFTP
             }
         }
 
-        /*
-        // Checks if a specified directory-path is visible and accessible.
-        public static bool DirectoryVisible(string path)
-        {
-            try
-            {
-                Directory.GetAccessControl(path);
-                return true;
-            }
-            catch (UnauthorizedAccessException)
-            {
-                return false;
-            }
-            catch (DirectoryNotFoundException)
-            {
-                return false;
-            }
-        }
-        */
-
         /* Populates the ListView with the directories and files of the current selection
          * in the TreeView. This Method is in testing and probably needs major improvements*/
         private void PopulateListViewLocal(TreeNode newSelected)
         {
             listViewLocal.Items.Clear();
-            DirectoryInfo nodeDirInfo = (DirectoryInfo)newSelected.Tag;
+            DirectoryInfo nodeDirInfo = new DirectoryInfo(newSelected.Tag.ToString());
             ListViewItem.ListViewSubItem[] subItems;
             ListViewItem item = null;
-
-            foreach (DirectoryInfo dir in nodeDirInfo.GetDirectories())
-            {
-                item = new ListViewItem(dir.Name, 0);
-                // Adding information about the full path on the file system to the ListViewItem.
-                item.Tag = dir.FullName;
-
-                subItems = new ListViewItem.ListViewSubItem[] {
-                    new ListViewItem.ListViewSubItem(item, "Directory"),
-                    new ListViewItem.ListViewSubItem(item, dir.LastAccessTime.ToShortDateString())
-                };
-
-                item.SubItems.AddRange(subItems);
-                listViewLocal.Items.Add(item);
-            }
+            
             foreach (FileInfo file in nodeDirInfo.GetFiles())
             {
                 item = new ListViewItem(file.Name, 1);
@@ -205,6 +147,46 @@ namespace EasyFTP
             listViewRemote.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
         }
 
+        /* Gradualy fill the subdir-nodes, when the user clicks on them
+         */
+        private void tvLocal_BeforeExpand(object sender, TreeViewCancelEventArgs e)
+        {
+            if (e.Node.Nodes.Count > 0)
+            {
+                if (e.Node.Nodes[0].Text == PLACEHOLDER)
+                {
+                    e.Node.Nodes.Clear();
+                    string[] dirs = Directory.GetDirectories(e.Node.Tag.ToString());
+                    foreach (string dir in dirs)
+                    {
+                        DirectoryInfo di = new DirectoryInfo(dir);
+                        TreeNode node = new TreeNode(di.Name);
+                        node.Tag = dir;
+                        node.ImageIndex = 0;
+                        node.SelectedImageIndex = 0;
+                        try
+                        {
+                            if (di.GetDirectories().GetLength(0) > 0)
+                                node.Nodes.Add(null, PLACEHOLDER);
+                        }
+                        catch (UnauthorizedAccessException)
+                        {
+                            // TODO: update node images
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show(ex.Message, "ExplorerForm", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                        finally
+                        {
+                            e.Node.Nodes.Add(node);
+                            tbLocalPath.Text = e.Node.Tag.ToString();
+                        }
+                    }
+                }
+            }
+        }
+
         // disable/enable the disconnect button and menu item
         private void DisconnectButtonEnabled(bool flag)
         {
@@ -252,14 +234,14 @@ namespace EasyFTP
             UpDownloadButtonEnabled(false);
         }
 
-        private void treeViewLocal_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
+        private void tvLocal_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
         {
             PopulateListViewLocal(e.Node);
         }
 
         private void treeViewRemote_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
         {
-            PopulateListViewRemote(e.Node);
+            tbLocalPath.Text = e.Node.Tag.ToString();
         }
 
         private void Connect_Click(object sender, EventArgs e)

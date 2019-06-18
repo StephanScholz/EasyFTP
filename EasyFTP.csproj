@@ -99,6 +99,7 @@
   <ItemGroup>
     <Content Include="Data\disconnect.png" />
     <Content Include="Data\Document.png" />
+    <Content Include="Data\Drive.png" />
     <Content Include="Data\Folder.png" />
     <Content Include="Data\server.png" />
     <Content Include="Data\upload.png" />
