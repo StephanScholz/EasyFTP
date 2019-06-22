@@ -274,7 +274,7 @@ namespace EasyFTP
         }
 
         /* Uploads a file from the local environment to the remote ftp server. */
-        private void uploadFile_Click(object sender, EventArgs e)
+        private async void uploadFile_ClickAsync(object sender, EventArgs e)
         {
             resetTimer();
             // Is there a remote directory selected?
@@ -291,7 +291,7 @@ namespace EasyFTP
                 pathLocal = tbLocalPath.Text + "\\" + item.Text;
                 pathRemote = tbRemotePath.Text + "/" + item.Text;
             }
-            ftp.UploadFile(pathLocal, pathRemote);
+            await ftp.UploadFileAsync(pathLocal, pathRemote, progressBar1);
             PopulateListViewRemote(tvRemote.SelectedNode);
         }
 

@@ -70,9 +70,8 @@ namespace EasyFTP.Classes
 
         /* Uploads one or many selected files from the local listView.
          * This currently only works with MultiSelect == false. MultiSelect feature
-         * will probably be added in the future
-         */
-        public bool UploadFile(string localPath, string remotePath)
+         * will probably be added in the future */
+        public async Task<bool> UploadFileAsync(string localPath, string remotePath, ProgressBar progressBar)
         {
             if (!File.Exists(localPath))
             {
@@ -90,9 +89,17 @@ namespace EasyFTP.Classes
             }
             else
             {
-                Console.WriteLine("remotePath: " + remotePath);
-                //Console.WriteLine(client.GetChmod(remotePath));
-                return client.UploadFile(localPath, remotePath);
+                // Callback method that accepts a FtpProgress object
+                Progress<FtpProgress> progress = new Progress<FtpProgress>(x => {
+
+                    // When progress in unknown, -1 will be sent
+                    if (x.Progress >= 0)
+                    {
+                        progressBar.Value = (int)x.Progress;
+                    }
+                });
+                bool ret = await client.UploadFileAsync(localPath, remotePath, FtpExists.Overwrite, false, FtpVerify.None, progress);
+                return ret;
             }
         }
 

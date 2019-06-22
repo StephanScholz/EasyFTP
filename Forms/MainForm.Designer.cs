@@ -66,6 +66,7 @@
             this.sessionTimer = new System.Windows.Forms.Timer(this.components);
             this.contextMenuLocal = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainerLocal)).BeginInit();
             this.splitContainerLocal.Panel1.SuspendLayout();
@@ -320,7 +321,7 @@
             this.uploadFiletoolStripMenuItem.Name = "uploadFiletoolStripMenuItem";
             this.uploadFiletoolStripMenuItem.Size = new System.Drawing.Size(133, 22);
             this.uploadFiletoolStripMenuItem.Text = "Upload File";
-            this.uploadFiletoolStripMenuItem.Click += new System.EventHandler(this.uploadFile_Click);
+            this.uploadFiletoolStripMenuItem.Click += new System.EventHandler(this.uploadFile_ClickAsync);
             // 
             // editToolStripMenuItem
             // 
@@ -377,7 +378,7 @@
             this.tsUpload.Name = "tsUpload";
             this.tsUpload.Size = new System.Drawing.Size(23, 22);
             this.tsUpload.Text = "toolStripButton1";
-            this.tsUpload.Click += new System.EventHandler(this.uploadFile_Click);
+            this.tsUpload.Click += new System.EventHandler(this.uploadFile_ClickAsync);
             // 
             // EasyConsole
             // 
@@ -416,11 +417,19 @@
             this.deleteToolStripMenuItem.Size = new System.Drawing.Size(107, 22);
             this.deleteToolStripMenuItem.Text = "Delete";
             // 
+            // progressBar1
+            // 
+            this.progressBar1.Location = new System.Drawing.Point(15, 619);
+            this.progressBar1.Name = "progressBar1";
+            this.progressBar1.Size = new System.Drawing.Size(770, 23);
+            this.progressBar1.TabIndex = 23;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 620);
+            this.ClientSize = new System.Drawing.Size(800, 654);
+            this.Controls.Add(this.progressBar1);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.EasyConsole);
             this.Controls.Add(this.toolStrip1);
@@ -491,6 +500,7 @@
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.ContextMenuStrip contextMenuLocal;
         private System.Windows.Forms.ToolStripMenuItem deleteToolStripMenuItem;
+        private System.Windows.Forms.ProgressBar progressBar1;
     }
 }
 

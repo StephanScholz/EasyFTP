@@ -16,16 +16,26 @@ namespace EasyFTP.Classes
             textBox = box;
         }
 
+        /* now with multithreading capability. Is sometimes called from asynchronous */
         public override void Write(string message)
         {
-            if (FtpOperations.Instance.IsClientConnected())
+            if (textBox.IsDisposed)
+                return;
+            textBox.Invoke(new Action(() =>
+            {
                 textBox.AppendText(message);
+            }));
         }
 
+        /* now with multithreading capability. Is sometimes called from asynchronous */
         public override void WriteLine(string message)
         {
-            if (FtpOperations.Instance.IsClientConnected())
+            if (textBox.IsDisposed)
+                return;
+            textBox.Invoke(new Action(() =>
+            {
                 textBox.AppendText(message + "\r\n");
+            }));
         }
     }
 }
