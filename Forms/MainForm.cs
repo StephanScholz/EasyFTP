@@ -24,7 +24,7 @@ namespace EasyFTP
         {
             InitializeComponent();
             
-            ftp = new FtpOperations();
+            ftp = FtpOperations.Instance;
         }
 
         // Placeholder for subdirs that have not been opened (yet).
@@ -37,7 +37,6 @@ namespace EasyFTP
 
             FtpTrace.LogUserName = false;   // hide FTP user names
             FtpTrace.LogPassword = false;   // hide FTP passwords
-            FtpTrace.LogIP = false; 	// hide FTP server IP addresses
 
             // Load all drives
             string[] drives = Environment.GetLogicalDrives();
@@ -183,7 +182,7 @@ namespace EasyFTP
                         }
                         catch (UnauthorizedAccessException)
                         {
-                            // TODO: update node images
+
                         }
                         catch (Exception ex)
                         {
@@ -192,7 +191,6 @@ namespace EasyFTP
                         finally
                         {
                             e.Node.Nodes.Add(node);
-                            tbLocalPath.Text = e.Node.Tag.ToString();
                         }
                     }
                 }
@@ -226,8 +224,11 @@ namespace EasyFTP
 
             // initiate a server-session
             if (cred != null)
+                // Login successful?
                 if (ftp.InitFtpServerSession(cred))
                     sessionTimer.Start();
+                else
+                    return;
 
             PopulateTreeViewRemote();
 
@@ -238,21 +239,28 @@ namespace EasyFTP
         // cleans up all remote-views and disconnects from the server
         private void CleanUp()
         {
+            // clear tree- and listView
             tvRemote.Nodes.Clear();
             listViewRemote.Items.Clear();
+            // terminate server-session
             ftp.CloseUserSession();
+            // disable neccessary buttons
             DisconnectButtonEnabled(false);
             UpDownloadButtonEnabled(false);
+            // clean path textBox
+            tbRemotePath.Text = "";
         }
 
         private void tvLocal_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
         {
             PopulateListViewLocal(e.Node);
+            tbLocalPath.Text = e.Node.Tag.ToString();
         }
 
         private void treeViewRemote_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
         {
-            tbLocalPath.Text = e.Node.Tag.ToString();
+            PopulateListViewRemote(e.Node);
+            tbRemotePath.Text = e.Node.Tag.ToString();
         }
 
         private void Connect_Click(object sender, EventArgs e)
@@ -265,13 +273,12 @@ namespace EasyFTP
             CleanUp();
         }
 
-        /* Uploads a file from the local environment to the remote ftp server.
-         * As of now, does not work and needs major improvements!
-         */
+        /* Uploads a file from the local environment to the remote ftp server. */
         private void uploadFile_Click(object sender, EventArgs e)
         {
             resetTimer();
-            if (tvRemote.SelectedNode == null)
+            // Is there a remote directory selected?
+            if (tbRemotePath.Text == "")
             {
                 MessageBox.Show("Please select a directory, where the file should be uploaded to.", 
                     "Upload Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -281,11 +288,8 @@ namespace EasyFTP
             string pathRemote = "";
             foreach (ListViewItem item in listViewLocal.SelectedItems)
             {
-                pathLocal = item.Tag.ToString();
-            }
-            foreach (ListViewItem item in listViewRemote.SelectedItems)
-            {
-                pathRemote = item.Tag.ToString();
+                pathLocal = tbLocalPath.Text + "\\" + item.Text;
+                pathRemote = tbRemotePath.Text + "/" + item.Text;
             }
             ftp.UploadFile(pathLocal, pathRemote);
             PopulateListViewRemote(tvRemote.SelectedNode);
@@ -312,6 +316,53 @@ namespace EasyFTP
         {
             CleanUp();
             sessionTimer.Stop();
+        }
+
+        private void View_MouseDown(object sender, MouseEventArgs e)
+        {
+            switch (e.Button)
+            {
+                case MouseButtons.Right:
+                {
+                    if (sender.GetType() == typeof(ListView))
+                    {
+                        // If local ListView
+                        if (((ListView)sender).Name == "listViewLocal")
+                        {
+                            ShowListViewContextMenu(true);
+                        }
+                        else
+                        {
+                            ShowListViewContextMenu(false);
+                        }
+                    }
+                    else if (sender.GetType() == typeof(TreeView))
+                    {
+                        // If local TreeView
+                        if (((TreeView)sender).Name == "tvLocal")
+                        {
+                            ShowTreeViewContextMenu(true);
+                        }
+                        else
+                        {
+                            ShowTreeViewContextMenu(false);
+                        }
+                    }
+                }
+                break;
+            }
+        }
+
+        /* Shows the context menu for the TreeViews. Params determine if local or not */
+        private void ShowTreeViewContextMenu(bool local)
+        {
+            contextMenuLocal.Show(new Point(Cursor.Position.X, Cursor.Position.Y));//places the menu at the pointer position
+        }
+
+        /* Shows the context menu for the ListViews. Paras determine if local or not */
+        private void ShowListViewContextMenu(bool local)
+        {
+            contextMenuLocal.Show(new Point(Cursor.Position.X, Cursor.Position.Y));//places the menu at the pointer position
         }
     }
 }

@@ -64,6 +64,8 @@
             this.EasyConsole = new System.Windows.Forms.RichTextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.sessionTimer = new System.Windows.Forms.Timer(this.components);
+            this.contextMenuLocal = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainerLocal)).BeginInit();
             this.splitContainerLocal.Panel1.SuspendLayout();
@@ -76,6 +78,7 @@
             this.splitContainerRemote.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.toolStrip1.SuspendLayout();
+            this.contextMenuLocal.SuspendLayout();
             this.SuspendLayout();
             // 
             // groupBox1
@@ -139,6 +142,7 @@
             this.tvLocal.TabIndex = 1;
             this.tvLocal.BeforeExpand += new System.Windows.Forms.TreeViewCancelEventHandler(this.tvLocal_BeforeExpand);
             this.tvLocal.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.tvLocal_NodeMouseClick);
+            this.tvLocal.MouseDown += new System.Windows.Forms.MouseEventHandler(this.View_MouseDown);
             // 
             // imageList1
             // 
@@ -163,6 +167,7 @@
             this.listViewLocal.TabIndex = 2;
             this.listViewLocal.UseCompatibleStateImageBehavior = false;
             this.listViewLocal.View = System.Windows.Forms.View.Details;
+            this.listViewLocal.MouseDown += new System.Windows.Forms.MouseEventHandler(this.View_MouseDown);
             // 
             // columnHeader1
             // 
@@ -236,6 +241,7 @@
             this.tvRemote.Size = new System.Drawing.Size(347, 149);
             this.tvRemote.TabIndex = 4;
             this.tvRemote.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.treeViewRemote_NodeMouseClick);
+            this.tvRemote.MouseDown += new System.Windows.Forms.MouseEventHandler(this.View_MouseDown);
             // 
             // listViewRemote
             // 
@@ -252,6 +258,7 @@
             this.listViewRemote.TabIndex = 5;
             this.listViewRemote.UseCompatibleStateImageBehavior = false;
             this.listViewRemote.View = System.Windows.Forms.View.Details;
+            this.listViewRemote.MouseDown += new System.Windows.Forms.MouseEventHandler(this.View_MouseDown);
             // 
             // columnHeader4
             // 
@@ -374,6 +381,7 @@
             // 
             // EasyConsole
             // 
+            this.EasyConsole.HideSelection = false;
             this.EasyConsole.Location = new System.Drawing.Point(15, 505);
             this.EasyConsole.Name = "EasyConsole";
             this.EasyConsole.Size = new System.Drawing.Size(770, 103);
@@ -394,6 +402,19 @@
             // 
             this.sessionTimer.Interval = 600000;
             this.sessionTimer.Tick += new System.EventHandler(this.sessionTimer_Tick);
+            // 
+            // contextMenuLocal
+            // 
+            this.contextMenuLocal.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.deleteToolStripMenuItem});
+            this.contextMenuLocal.Name = "contextMenuLocal";
+            this.contextMenuLocal.Size = new System.Drawing.Size(108, 26);
+            // 
+            // deleteToolStripMenuItem
+            // 
+            this.deleteToolStripMenuItem.Name = "deleteToolStripMenuItem";
+            this.deleteToolStripMenuItem.Size = new System.Drawing.Size(107, 22);
+            this.deleteToolStripMenuItem.Text = "Delete";
             // 
             // MainForm
             // 
@@ -427,6 +448,7 @@
             this.menuStrip1.PerformLayout();
             this.toolStrip1.ResumeLayout(false);
             this.toolStrip1.PerformLayout();
+            this.contextMenuLocal.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -467,6 +489,8 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.TextBox tbRemotePath;
         private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.ContextMenuStrip contextMenuLocal;
+        private System.Windows.Forms.ToolStripMenuItem deleteToolStripMenuItem;
     }
 }
 

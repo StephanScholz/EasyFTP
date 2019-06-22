@@ -7,33 +7,38 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
+using System.Security.Authentication;
 
 namespace EasyFTP.Classes
 {
     /* This class offers different operations for communicating with FTP-Servers,
      * downloading files, uploading files, checking status/directory integrity and more */
-    class FtpOperations
+    public sealed class FtpOperations
     {
-        public FtpClient client;
+        private static readonly FtpOperations instance = new FtpOperations();
+        public static FtpOperations Instance { get { return instance; } }
 
-        public FtpOperations() { }
+        private FtpClient client;
+        public bool IsClientConnected() { return client.IsConnected; }
+
+        static FtpOperations() { }
+        private FtpOperations() { }
 
         public bool InitFtpServerSession(string[] credentials)
         {
             // create an FTP client. cred[0] is IP-Adress
-            client = new FtpClient(credentials[0])
-            {
+            client = new FtpClient(credentials[0]);
 
-                // if FTP needs credentials
-                Credentials = new NetworkCredential(credentials[1], credentials[2]),
+            // if FTP needs credentials
+            client.Credentials = new NetworkCredential(credentials[1], credentials[2]);
 
-                /* Support TLS-Protocol 1.1 and 1.2
-                 * use only for late testing, because Certificates are expensive! */
-                //client.EncryptionMode = FtpEncryptionMode.Explicit;
+            /* Support TLS-Protocol 1.1 and 1.2
+             * use only for late testing, because Certificates are expensive! */
+            //client.EncryptionMode = FtpEncryptionMode.Explicit;
+            //client.SslProtocols = SslProtocols.Tls;
 
-                // standard FTP-Port, change if needed
-                Port = 21
-            };
+            // standard FTP-Port, change if needed
+            client.Port = 21;
 
             try
             {
@@ -85,7 +90,8 @@ namespace EasyFTP.Classes
             }
             else
             {
-                Console.WriteLine(client.GetChmod(remotePath));
+                Console.WriteLine("remotePath: " + remotePath);
+                //Console.WriteLine(client.GetChmod(remotePath));
                 return client.UploadFile(localPath, remotePath);
             }
         }
