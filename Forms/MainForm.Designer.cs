@@ -64,8 +64,7 @@
             this.EasyConsole = new System.Windows.Forms.RichTextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.sessionTimer = new System.Windows.Forms.Timer(this.components);
-            this.contextMenuLocal = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.contextMenu1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainerLocal)).BeginInit();
@@ -79,7 +78,6 @@
             this.splitContainerRemote.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.toolStrip1.SuspendLayout();
-            this.contextMenuLocal.SuspendLayout();
             this.SuspendLayout();
             // 
             // groupBox1
@@ -133,6 +131,7 @@
             // 
             // tvLocal
             // 
+            this.tvLocal.ContextMenuStrip = this.contextMenu1;
             this.tvLocal.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tvLocal.ImageIndex = 2;
             this.tvLocal.ImageList = this.imageList1;
@@ -159,6 +158,7 @@
             this.columnHeader1,
             this.columnHeader2,
             this.columnHeader3});
+            this.listViewLocal.ContextMenuStrip = this.contextMenu1;
             this.listViewLocal.Dock = System.Windows.Forms.DockStyle.Fill;
             this.listViewLocal.Location = new System.Drawing.Point(0, 0);
             this.listViewLocal.MultiSelect = false;
@@ -233,6 +233,7 @@
             // 
             // tvRemote
             // 
+            this.tvRemote.ContextMenuStrip = this.contextMenu1;
             this.tvRemote.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tvRemote.ImageIndex = 0;
             this.tvRemote.ImageList = this.imageList1;
@@ -250,6 +251,7 @@
             this.columnHeader4,
             this.columnHeader5,
             this.columnHeader6});
+            this.listViewRemote.ContextMenuStrip = this.contextMenu1;
             this.listViewRemote.Dock = System.Windows.Forms.DockStyle.Fill;
             this.listViewRemote.Location = new System.Drawing.Point(0, 0);
             this.listViewRemote.MultiSelect = false;
@@ -404,18 +406,12 @@
             this.sessionTimer.Interval = 600000;
             this.sessionTimer.Tick += new System.EventHandler(this.sessionTimer_Tick);
             // 
-            // contextMenuLocal
+            // contextMenu1
             // 
-            this.contextMenuLocal.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.deleteToolStripMenuItem});
-            this.contextMenuLocal.Name = "contextMenuLocal";
-            this.contextMenuLocal.Size = new System.Drawing.Size(108, 26);
-            // 
-            // deleteToolStripMenuItem
-            // 
-            this.deleteToolStripMenuItem.Name = "deleteToolStripMenuItem";
-            this.deleteToolStripMenuItem.Size = new System.Drawing.Size(107, 22);
-            this.deleteToolStripMenuItem.Text = "Delete";
+            this.contextMenu1.Name = "contextMenuLocal";
+            this.contextMenu1.Size = new System.Drawing.Size(61, 4);
+            this.contextMenu1.Tag = "";
+            this.contextMenu1.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenu1_Opening);
             // 
             // progressBar1
             // 
@@ -457,7 +453,6 @@
             this.menuStrip1.PerformLayout();
             this.toolStrip1.ResumeLayout(false);
             this.toolStrip1.PerformLayout();
-            this.contextMenuLocal.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -498,8 +493,7 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.TextBox tbRemotePath;
         private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.ContextMenuStrip contextMenuLocal;
-        private System.Windows.Forms.ToolStripMenuItem deleteToolStripMenuItem;
+        private System.Windows.Forms.ContextMenuStrip contextMenu1;
         private System.Windows.Forms.ProgressBar progressBar1;
     }
 }

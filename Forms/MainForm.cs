@@ -84,7 +84,7 @@ namespace EasyFTP
         }
 
         /* Populates the ListView with the directories and files of the current selection
-         * in the TreeView. This Method is in testing and probably needs major improvements*/
+         * in the TreeView.*/
         private void PopulateListViewLocal(TreeNode newSelected)
         {
             listViewLocal.Items.Clear();
@@ -318,51 +318,52 @@ namespace EasyFTP
             sessionTimer.Stop();
         }
 
+        /* Open contextMenu after MouseButton check */
         private void View_MouseDown(object sender, MouseEventArgs e)
         {
             switch (e.Button)
             {
                 case MouseButtons.Right:
                 {
-                    if (sender.GetType() == typeof(ListView))
-                    {
-                        // If local ListView
-                        if (((ListView)sender).Name == "listViewLocal")
-                        {
-                            ShowListViewContextMenu(true);
-                        }
-                        else
-                        {
-                            ShowListViewContextMenu(false);
-                        }
-                    }
-                    else if (sender.GetType() == typeof(TreeView))
-                    {
-                        // If local TreeView
-                        if (((TreeView)sender).Name == "tvLocal")
-                        {
-                            ShowTreeViewContextMenu(true);
-                        }
-                        else
-                        {
-                            ShowTreeViewContextMenu(false);
-                        }
-                    }
+                        contextMenu1.Show(new Point(Cursor.Position.X, Cursor.Position.Y));
                 }
                 break;
             }
         }
 
-        /* Shows the context menu for the TreeViews. Params determine if local or not */
-        private void ShowTreeViewContextMenu(bool local)
+        /* Open contextMenu dynamically for every View. As there are different
+         * actions to be performed, every view gets its own set of ToolStripMenuItems */
+        private void contextMenu1_Opening(object sender, CancelEventArgs e)
         {
-            contextMenuLocal.Show(new Point(Cursor.Position.X, Cursor.Position.Y));//places the menu at the pointer position
-        }
+            ToolStripMenuItem menuItemUpload = new ToolStripMenuItem("&Upload File");
+            ToolStripMenuItem menuItemDownload = new ToolStripMenuItem("&Download File");
+            ToolStripMenuItem menuItemDelete = new ToolStripMenuItem("&Delete");
 
-        /* Shows the context menu for the ListViews. Paras determine if local or not */
-        private void ShowListViewContextMenu(bool local)
-        {
-            contextMenuLocal.Show(new Point(Cursor.Position.X, Cursor.Position.Y));//places the menu at the pointer position
+            Control c = contextMenu1.SourceControl as Control;
+
+            // Clear all previously added ToolStripMenuItems.
+            contextMenu1.Items.Clear();
+            if (c == tvLocal)
+            {
+                contextMenu1.Items.Add(menuItemDelete);
+                FtpTrace.WriteLine("tvLocal");
+            }
+            else if (c == tvRemote)
+            {
+                FtpTrace.WriteLine("tvRemote");
+            }
+            else if (c == listViewLocal)
+            {
+                contextMenu1.Items.Add(menuItemUpload);
+                contextMenu1.Items.Add(menuItemDelete);
+                FtpTrace.WriteLine("listViewLocal");
+            }
+            else if (c == listViewRemote)
+            {
+                contextMenu1.Items.Add(menuItemDownload);
+                FtpTrace.WriteLine("listViewRemote");
+            }
+            contextMenu1.Refresh();
         }
     }
 }
