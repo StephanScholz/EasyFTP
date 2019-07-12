@@ -62,45 +62,108 @@ namespace EasyFTP.Classes
 
             return false;
         }
-        
+
+        /* Get a list of file objects in "root" path on the ftp server */
         public FtpListItem[] GetDirectoryListing(string root)
         {
             return client.GetListing(root);
         }
 
-        /* Uploads one or many selected files from the local listView.
+        /* Uploads one or many selected files from the local environment.
          * This currently only works with MultiSelect == false. MultiSelect feature
          * will probably be added in the future */
         public async Task<bool> UploadFileAsync(string localPath, string remotePath, ProgressBar progressBar)
         {
-            if (!File.Exists(localPath))
+            if (!CheckPath(localPath, true)) return false;
+            // Callback method that accepts a FtpProgress object
+            Progress<FtpProgress> progress = new Progress<FtpProgress>(x =>
             {
-                MessageBox.Show("It seems the file you wanted to upload, does not exist. Please try again.", 
-                    "Upload Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return false;
-            }
-            // get the file attributes for file or directory
-            FileAttributes attr = File.GetAttributes(localPath);
-            if ((attr & FileAttributes.Directory) == FileAttributes.Directory)
+
+                // When progress in unknown, -1 will be sent
+                if (x.Progress >= 0)
+                {
+                    progressBar.Value = (int)x.Progress;
+                }
+            });
+            bool ret = await client.UploadFileAsync(localPath, remotePath, FtpExists.Overwrite, false, FtpVerify.None, progress);
+            return ret;
+        }
+
+        /* Downloads one or many selected files from the ftp server
+         * This currently only works with MultiSelect == false. MultiSelect feature
+         * will probably be added in the future */
+        public async Task<bool> DownloadFileAsync(string localPath, string remotePath, ProgressBar progressBar)
+        {
+            if(!CheckPath(remotePath, false)) return false;
+
+            // Callback method that accepts a FtpProgress object
+            Progress<FtpProgress> progress = new Progress<FtpProgress>(x =>
             {
-                MessageBox.Show("You cannot upload directories. Please select a File and try again.",
-                    "Upload Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return false;                
+
+                // When progress in unknown, -1 will be sent
+                if (x.Progress >= 0)
+                {
+                    progressBar.Value = (int)x.Progress;
+                }
+            });
+            bool ret = await client.DownloadFileAsync(localPath, remotePath, FtpLocalExists.Overwrite, FtpVerify.None, progress);
+            return ret;
+        }
+
+        // Checks if the local and remote path are in correct order
+        // and if all paths exist on the server and the local environment.
+        private bool CheckPath(string path, bool local)
+        {
+            if (local)
+            {
+                // Is there a local directory selected?
+                if (path == "")
+                {
+                    MessageBox.Show("Please select a directory, where the file should be downloaded to.",
+                        "Download Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return false;
+                }
+                // Does the file exist?
+                if (!File.Exists(path))
+                {
+                    MessageBox.Show("It seems the file you wanted to upload, does not exist. Please try again.",
+                        "Upload Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return false;
+                }
+                // get the file attributes for file or directory
+                FileAttributes attr = File.GetAttributes(path);
+                if ((attr & FileAttributes.Directory) == FileAttributes.Directory)
+                {
+                    MessageBox.Show("You cannot upload directories. Please select a file and try again.",
+                        "Upload Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return false;
+                }
             }
             else
             {
-                // Callback method that accepts a FtpProgress object
-                Progress<FtpProgress> progress = new Progress<FtpProgress>(x => {
-
-                    // When progress in unknown, -1 will be sent
-                    if (x.Progress >= 0)
-                    {
-                        progressBar.Value = (int)x.Progress;
-                    }
-                });
-                bool ret = await client.UploadFileAsync(localPath, remotePath, FtpExists.Overwrite, false, FtpVerify.None, progress);
-                return ret;
+                // Is there a remote directory selected?
+                if (path == "")
+                {
+                    MessageBox.Show("Please select a directory, where the file should be downloaded to.",
+                        "Download Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return false;
+                }
+                // Does the file exist on the ftp
+                if (!client.FileExists(path))
+                {
+                    MessageBox.Show("It seems, the file you wanted to download, does not exist. Please try again",
+                        "Download Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return false;
+                }
+                // Check if object is a directory
+                if (client.DirectoryExists(path))
+                {
+                    MessageBox.Show("You cannot download directories. Please select a file and try again.",
+                        "Download Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return false;
+                }
             }
+            return true;
         }
 
         // close current server session and disable necessary buttons

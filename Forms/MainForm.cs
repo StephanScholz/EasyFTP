@@ -47,8 +47,10 @@ namespace EasyFTP
                 DirectoryInfo info = new DirectoryInfo(drive);
                 if (info.Exists)
                 {
-                    TreeNode rootNode = new TreeNode(info.Name);
-                    rootNode.Tag = info;
+                    TreeNode rootNode = new TreeNode(info.Name)
+                    {
+                        Tag = info
+                    };
                     tvLocal.Nodes.Add(rootNode);
                     rootNode.Nodes.Add(PLACEHOLDER);
                 }
@@ -57,8 +59,10 @@ namespace EasyFTP
         
         private void PopulateTreeViewRemote()
         {
-            TreeNode rootNode = new TreeNode("/");
-            rootNode.Tag = "/";
+            TreeNode rootNode = new TreeNode("/")
+            {
+                Tag = "/"
+            };
             GetFtpDirectories(ftp.GetDirectoryListing("/"), rootNode);
             tvRemote.Nodes.Add(rootNode);
         }
@@ -70,13 +74,15 @@ namespace EasyFTP
             FtpListItem[] subSubDirs;
             foreach (FtpListItem item in subDirs)
             {
-                aNode = new TreeNode(item.Name, 0, 0);
-                aNode.Tag = item.FullName;
-                aNode.ImageKey = "folder";
-
-                subSubDirs = ftp.GetDirectoryListing(item.FullName);
+                aNode = new TreeNode(item.Name, 0, 0)
+                {
+                    Tag = item.FullName,
+                    ImageKey = "folder"
+                };
+                
                 if (item.Type == FtpFileSystemObjectType.Directory)
                 {
+                    subSubDirs = ftp.GetDirectoryListing(item.FullName);
                     GetFtpDirectories(subSubDirs, aNode);
                     nodeToAddTo.Nodes.Add(aNode);
                 }
@@ -84,9 +90,13 @@ namespace EasyFTP
         }
 
         /* Populates the ListView with the directories and files of the current selection
-         * in the TreeView.*/
-        private void PopulateListViewLocal(TreeNode newSelected)
+         * in the TreeView. "newSelected" default is always the SelectedNode of the respective TreeView*/
+        private void PopulateListViewLocal(TreeNode newSelected = null)
         {
+            // Default param
+            if (newSelected == null) newSelected = tvLocal.SelectedNode;
+
+            // clear old items
             listViewLocal.Items.Clear();
             DirectoryInfo nodeDirInfo = new DirectoryInfo(newSelected.Tag.ToString());
             ListViewItem.ListViewSubItem[] subItems;
@@ -94,11 +104,14 @@ namespace EasyFTP
             
             try
             {
+                // load new items
                 foreach (FileInfo file in nodeDirInfo.GetFiles())
                 {
-                    item = new ListViewItem(file.Name, 1);
-                    // Adding information about the full path on the file system to the ListViewItem.
-                    item.Tag = file.FullName;
+                    item = new ListViewItem(file.Name, 1)
+                    {
+                        // Adding information about the full path on the file system to the ListViewItem.
+                        Tag = file.FullName
+                    };
 
                     subItems = new ListViewItem.ListViewSubItem[] {
                     new ListViewItem.ListViewSubItem(item, "File"),
@@ -119,8 +132,11 @@ namespace EasyFTP
         }
 
         /* Does the same as PopulateListViewLocal(), but with a Ftp directory structure */
-        private void PopulateListViewRemote(TreeNode newSelected)
+        private void PopulateListViewRemote(TreeNode newSelected = null)
         {
+            // Default param
+            if (newSelected == null) newSelected = tvRemote.SelectedNode;
+
             // clear old items
             listViewRemote.Items.Clear();
             string root = (string)newSelected.Tag;
@@ -132,9 +148,10 @@ namespace EasyFTP
             {
                 if (item.Type == FtpFileSystemObjectType.Directory)
                 {
-                    lvItem = new ListViewItem(item.Name, 0);
-
-                    lvItem.Tag = item.FullName;
+                    lvItem = new ListViewItem(item.Name, 0)
+                    {
+                        Tag = item.FullName
+                    };
 
                     subItems = new ListViewItem.ListViewSubItem[] {
                         new ListViewItem.ListViewSubItem(lvItem, "Directory"),
@@ -160,7 +177,7 @@ namespace EasyFTP
 
         /* Gradualy fill the subdir-nodes, when the user expands to them
          */
-        private void tvLocal_BeforeExpand(object sender, TreeViewCancelEventArgs e)
+        private void TvLocal_BeforeExpand(object sender, TreeViewCancelEventArgs e)
         {
             if (e.Node.Nodes.Count > 0)
             {
@@ -171,10 +188,12 @@ namespace EasyFTP
                     foreach (string dir in dirs)
                     {
                         DirectoryInfo di = new DirectoryInfo(dir);
-                        TreeNode node = new TreeNode(di.Name);
-                        node.Tag = dir;
-                        node.ImageIndex = 0;
-                        node.SelectedImageIndex = 0;
+                        TreeNode node = new TreeNode(di.Name)
+                        {
+                            Tag = dir,
+                            ImageIndex = 0,
+                            SelectedImageIndex = 0
+                        };
                         try
                         {
                             if (di.GetDirectories().GetLength(0) > 0)
@@ -208,6 +227,8 @@ namespace EasyFTP
         private void UpDownloadButtonEnabled(bool flag)
         {
             tsUpload.Enabled = flag;
+            tsDownload.Enabled = flag;
+            downloadFileToolStripMenuItem.Enabled = flag;
             uploadFiletoolStripMenuItem.Enabled = flag;
         }
 
@@ -221,6 +242,10 @@ namespace EasyFTP
             {
                 cred = dc.credentials;
             }
+            else
+            {
+                return;
+            }
 
             // initiate a server-session
             if (cred != null)
@@ -232,6 +257,7 @@ namespace EasyFTP
 
             PopulateTreeViewRemote();
 
+            //Enable all necessary buttons
             DisconnectButtonEnabled(true);
             UpDownloadButtonEnabled(true);
         }
@@ -251,13 +277,13 @@ namespace EasyFTP
             tbRemotePath.Text = "";
         }
 
-        private void tvLocal_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
+        private void TvLocal_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
         {
             PopulateListViewLocal(e.Node);
             tbLocalPath.Text = e.Node.Tag.ToString();
         }
 
-        private void treeViewRemote_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
+        private void TreeViewRemote_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
         {
             PopulateListViewRemote(e.Node);
             tbRemotePath.Text = e.Node.Tag.ToString();
@@ -272,27 +298,45 @@ namespace EasyFTP
         {
             CleanUp();
         }
-
-        /* Uploads a file from the local environment to the remote ftp server. */
-        private async void uploadFile_ClickAsync(object sender, EventArgs e)
+        
+        private async void UploadFile_ClickAsync(object sender, EventArgs e)
         {
-            resetTimer();
-            // Is there a remote directory selected?
-            if (tbRemotePath.Text == "")
-            {
-                MessageBox.Show("Please select a directory, where the file should be uploaded to.", 
-                    "Upload Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
+            if (await PerformTransfer(true))
+                PopulateListViewRemote();
+        }
+        
+        private async void DownloadFile_ClickAsync(object sender, EventArgs e)
+        {
+            if (await PerformTransfer(false))
+                PopulateListViewLocal();
+        }
+
+        // Transfers (uploads/downloads) files from and to the ftp server.
+        private async Task<bool> PerformTransfer(bool upload)
+        {
+            ResetTimer();
+
             string pathLocal = "";
             string pathRemote = "";
-            foreach (ListViewItem item in listViewLocal.SelectedItems)
+
+            if (upload)
             {
-                pathLocal = tbLocalPath.Text + "\\" + item.Text;
-                pathRemote = tbRemotePath.Text + "/" + item.Text;
+                foreach (ListViewItem item in listViewLocal.SelectedItems)
+                {
+                    pathLocal = tbLocalPath.Text + "\\" + item.Text;
+                    pathRemote = tbRemotePath.Text + "/" + item.Text;
+                }
+                return await ftp.UploadFileAsync(pathLocal, pathRemote, progressBar1);
             }
-            await ftp.UploadFileAsync(pathLocal, pathRemote, progressBar1);
-            PopulateListViewRemote(tvRemote.SelectedNode);
+            else
+            {
+                foreach (ListViewItem item in listViewRemote.SelectedItems)
+                {
+                    pathLocal = tbLocalPath.Text + "\\" + item.Text;
+                    pathRemote = tbRemotePath.Text + "/" + item.Text;
+                }
+                return await ftp.DownloadFileAsync(pathLocal, pathRemote, progressBar1);
+            }
         }
 
         private void Main_FormClosing(object sender, FormClosingEventArgs e)
@@ -301,7 +345,7 @@ namespace EasyFTP
         }
 
         /* Restarts the timer. Call this when user comes out of idle */
-        public void resetTimer()
+        public void ResetTimer()
         {
             sessionTimer.Stop();
             sessionTimer.Start();
@@ -312,7 +356,7 @@ namespace EasyFTP
          * should take more than 10 minutes, because during transaction the user
          * will be in idle state.
          */
-        private void sessionTimer_Tick(object sender, EventArgs e)
+        private void SessionTimerTick(object sender, EventArgs e)
         {
             CleanUp();
             sessionTimer.Stop();
@@ -333,37 +377,34 @@ namespace EasyFTP
 
         /* Open contextMenu dynamically for every View. As there are different
          * actions to be performed, every view gets its own set of ToolStripMenuItems */
-        private void contextMenu1_Opening(object sender, CancelEventArgs e)
+        private void ContextMenu1_Opening(object sender, CancelEventArgs e)
         {
-            ToolStripMenuItem menuItemUpload = new ToolStripMenuItem("&Upload File");
-            ToolStripMenuItem menuItemDownload = new ToolStripMenuItem("&Download File");
+            ToolStripMenuItem menuItemUpload = new ToolStripMenuItem("&Upload File", null, UploadFile_ClickAsync);
+            ToolStripMenuItem menuItemDownload = new ToolStripMenuItem("&Download File", null, DownloadFile_ClickAsync);
             ToolStripMenuItem menuItemDelete = new ToolStripMenuItem("&Delete");
 
-            Control c = contextMenu1.SourceControl as Control;
+            Control c = contextMenu1.SourceControl;
 
             // Clear all previously added ToolStripMenuItems.
             contextMenu1.Items.Clear();
             if (c == tvLocal)
             {
                 contextMenu1.Items.Add(menuItemDelete);
-                FtpTrace.WriteLine("tvLocal");
             }
             else if (c == tvRemote)
             {
-                FtpTrace.WriteLine("tvRemote");
+
             }
             else if (c == listViewLocal)
             {
                 contextMenu1.Items.Add(menuItemUpload);
                 contextMenu1.Items.Add(menuItemDelete);
-                FtpTrace.WriteLine("listViewLocal");
             }
             else if (c == listViewRemote)
             {
                 contextMenu1.Items.Add(menuItemDownload);
-                FtpTrace.WriteLine("listViewRemote");
             }
-            contextMenu1.Refresh();
+            e.Cancel = false;
         }
     }
 }

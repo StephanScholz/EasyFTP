@@ -35,6 +35,7 @@
             this.label2 = new System.Windows.Forms.Label();
             this.splitContainerLocal = new System.Windows.Forms.SplitContainer();
             this.tvLocal = new System.Windows.Forms.TreeView();
+            this.contextMenu1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.imageList1 = new System.Windows.Forms.ImageList(this.components);
             this.listViewLocal = new System.Windows.Forms.ListView();
             this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -64,8 +65,9 @@
             this.EasyConsole = new System.Windows.Forms.RichTextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.sessionTimer = new System.Windows.Forms.Timer(this.components);
-            this.contextMenu1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
+            this.tsDownload = new System.Windows.Forms.ToolStripButton();
+            this.downloadFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainerLocal)).BeginInit();
             this.splitContainerLocal.Panel1.SuspendLayout();
@@ -140,9 +142,16 @@
             this.tvLocal.SelectedImageIndex = 2;
             this.tvLocal.Size = new System.Drawing.Size(347, 149);
             this.tvLocal.TabIndex = 1;
-            this.tvLocal.BeforeExpand += new System.Windows.Forms.TreeViewCancelEventHandler(this.tvLocal_BeforeExpand);
-            this.tvLocal.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.tvLocal_NodeMouseClick);
+            this.tvLocal.BeforeExpand += new System.Windows.Forms.TreeViewCancelEventHandler(this.TvLocal_BeforeExpand);
+            this.tvLocal.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.TvLocal_NodeMouseClick);
             this.tvLocal.MouseDown += new System.Windows.Forms.MouseEventHandler(this.View_MouseDown);
+            // 
+            // contextMenu1
+            // 
+            this.contextMenu1.Name = "contextMenuLocal";
+            this.contextMenu1.Size = new System.Drawing.Size(61, 4);
+            this.contextMenu1.Tag = "";
+            this.contextMenu1.Opening += new System.ComponentModel.CancelEventHandler(this.ContextMenu1_Opening);
             // 
             // imageList1
             // 
@@ -242,7 +251,7 @@
             this.tvRemote.SelectedImageIndex = 0;
             this.tvRemote.Size = new System.Drawing.Size(347, 149);
             this.tvRemote.TabIndex = 4;
-            this.tvRemote.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.treeViewRemote_NodeMouseClick);
+            this.tvRemote.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.TreeViewRemote_NodeMouseClick);
             this.tvRemote.MouseDown += new System.Windows.Forms.MouseEventHandler(this.View_MouseDown);
             // 
             // listViewRemote
@@ -292,7 +301,8 @@
             this.connectToolStripMenuItem,
             this.disconnectToolStripMenuItem,
             this.toolStripSeparator2,
-            this.uploadFiletoolStripMenuItem});
+            this.uploadFiletoolStripMenuItem,
+            this.downloadFileToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
             this.fileToolStripMenuItem.Text = "File";
@@ -323,7 +333,7 @@
             this.uploadFiletoolStripMenuItem.Name = "uploadFiletoolStripMenuItem";
             this.uploadFiletoolStripMenuItem.Size = new System.Drawing.Size(133, 22);
             this.uploadFiletoolStripMenuItem.Text = "Upload File";
-            this.uploadFiletoolStripMenuItem.Click += new System.EventHandler(this.uploadFile_ClickAsync);
+            this.uploadFiletoolStripMenuItem.Click += new System.EventHandler(this.UploadFile_ClickAsync);
             // 
             // editToolStripMenuItem
             // 
@@ -337,7 +347,8 @@
             this.tsConnect,
             this.tsDisconnect,
             this.toolStripSeparator1,
-            this.tsUpload});
+            this.tsUpload,
+            this.tsDownload});
             this.toolStrip1.Location = new System.Drawing.Point(0, 24);
             this.toolStrip1.Name = "toolStrip1";
             this.toolStrip1.Size = new System.Drawing.Size(800, 25);
@@ -379,8 +390,8 @@
             this.tsUpload.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsUpload.Name = "tsUpload";
             this.tsUpload.Size = new System.Drawing.Size(23, 22);
-            this.tsUpload.Text = "toolStripButton1";
-            this.tsUpload.Click += new System.EventHandler(this.uploadFile_ClickAsync);
+            this.tsUpload.Text = "Upload";
+            this.tsUpload.Click += new System.EventHandler(this.UploadFile_ClickAsync);
             // 
             // EasyConsole
             // 
@@ -404,14 +415,7 @@
             // sessionTimer
             // 
             this.sessionTimer.Interval = 600000;
-            this.sessionTimer.Tick += new System.EventHandler(this.sessionTimer_Tick);
-            // 
-            // contextMenu1
-            // 
-            this.contextMenu1.Name = "contextMenuLocal";
-            this.contextMenu1.Size = new System.Drawing.Size(61, 4);
-            this.contextMenu1.Tag = "";
-            this.contextMenu1.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenu1_Opening);
+            this.sessionTimer.Tick += new System.EventHandler(this.SessionTimerTick);
             // 
             // progressBar1
             // 
@@ -419,6 +423,25 @@
             this.progressBar1.Name = "progressBar1";
             this.progressBar1.Size = new System.Drawing.Size(770, 23);
             this.progressBar1.TabIndex = 23;
+            // 
+            // tsDownload
+            // 
+            this.tsDownload.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsDownload.Enabled = false;
+            this.tsDownload.Image = ((System.Drawing.Image)(resources.GetObject("tsDownload.Image")));
+            this.tsDownload.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsDownload.Name = "tsDownload";
+            this.tsDownload.Size = new System.Drawing.Size(23, 22);
+            this.tsDownload.Text = "Download";
+            this.tsDownload.Click += new System.EventHandler(this.DownloadFile_ClickAsync);
+            // 
+            // downloadFileToolStripMenuItem
+            // 
+            this.downloadFileToolStripMenuItem.Enabled = false;
+            this.downloadFileToolStripMenuItem.Name = "downloadFileToolStripMenuItem";
+            this.downloadFileToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.downloadFileToolStripMenuItem.Text = "Download File";
+            this.downloadFileToolStripMenuItem.Click += new System.EventHandler(this.DownloadFile_ClickAsync);
             // 
             // MainForm
             // 
@@ -495,6 +518,8 @@
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.ContextMenuStrip contextMenu1;
         private System.Windows.Forms.ProgressBar progressBar1;
+        private System.Windows.Forms.ToolStripButton tsDownload;
+        private System.Windows.Forms.ToolStripMenuItem downloadFileToolStripMenuItem;
     }
 }
 
