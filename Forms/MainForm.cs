@@ -1,15 +1,9 @@
 ﻿using EasyFTP.Classes;
 using FluentFTP;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
-using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.Linq;
-using System.Net;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -30,6 +24,8 @@ namespace EasyFTP
         // Placeholder for subdirs that have not been opened (yet).
         private const string PLACEHOLDER = "...";
 
+        //--------------------Loading/Closing Events--------------------
+        
         private void Form1_Load(object sender, EventArgs e)
         {
             // custom debug console for FTP-connections
@@ -56,7 +52,95 @@ namespace EasyFTP
                 }
             }
         }
-        
+
+        private void Main_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            ftp.CloseUserSession();
+        }
+
+        //--------------------Click Events--------------------
+
+        private void TvLocal_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
+        {
+            PopulateListViewLocal(e.Node);
+            tbLocalPath.Text = e.Node.Tag.ToString();
+        }
+
+        private void TreeViewRemote_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
+        {
+            PopulateListViewRemote(e.Node);
+            tbRemotePath.Text = e.Node.Tag.ToString();
+        }
+
+        private void Connect_Click(object sender, EventArgs e)
+        {
+            ConnectToFTP();
+        }
+
+        private void Disconnect_Click(object sender, EventArgs e)
+        {
+            CleanUp();
+        }
+
+        private void DeleteFile_Click(object sender, EventArgs e)
+        {
+            //TODO Implement Delete-Function
+            string cName = ((ToolStripMenuItem)sender).Tag.ToString();
+
+            switch (cName)
+            {
+                case "tvLocal":
+
+                    break;
+
+                case "tvRemote":
+
+                    break;
+
+                case "listViewLocal":
+
+                    break;
+
+                case "listViewRemote":
+
+                    break;
+            }
+        }
+
+        // Async Events
+
+        private async void UploadFile_ClickAsync(object sender, EventArgs e)
+        {
+            try
+            {
+                if (await PerformTransfer(true))
+                {
+                    PopulateListViewRemote();
+                }
+            }
+            catch (IOException ex)
+            {
+                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private async void DownloadFile_ClickAsync(object sender, EventArgs e)
+        {
+            try
+            {
+                if (await PerformTransfer(false))
+                {
+                    PopulateListViewLocal();
+                }
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        //--------------------TreeView/ListView--------------------
+
         private void PopulateTreeViewRemote()
         {
             TreeNode rootNode = new TreeNode("/")
@@ -199,9 +283,9 @@ namespace EasyFTP
                             if (di.GetDirectories().GetLength(0) > 0)
                                 node.Nodes.Add(null, PLACEHOLDER);
                         }
-                        catch (UnauthorizedAccessException)
+                        catch (UnauthorizedAccessException ex)
                         {
-
+                            MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
                         catch (Exception ex)
                         {
@@ -214,22 +298,6 @@ namespace EasyFTP
                     }
                 }
             }
-        }
-
-        // disable/enable the disconnect button and menu item
-        private void DisconnectButtonEnabled(bool flag)
-        {
-            tsDisconnect.Enabled = flag;
-            disconnectToolStripMenuItem.Enabled = flag;
-        }
-
-        // disable/enable the Upload/Download Buttons
-        private void UpDownloadButtonEnabled(bool flag)
-        {
-            tsUpload.Enabled = flag;
-            tsDownload.Enabled = flag;
-            downloadFileToolStripMenuItem.Enabled = flag;
-            uploadFiletoolStripMenuItem.Enabled = flag;
         }
 
         /* establishes a connection to a FTP Server. Initiates the population of
@@ -262,6 +330,26 @@ namespace EasyFTP
             UpDownloadButtonEnabled(true);
         }
 
+        //--------------------Enable/Disable Buttons-------------------
+
+        // disable/enable the disconnect button and menu item
+        private void DisconnectButtonEnabled(bool flag)
+        {
+            tsDisconnect.Enabled = flag;
+            disconnectToolStripMenuItem.Enabled = flag;
+        }
+
+        // disable/enable the Upload/Download Buttons
+        private void UpDownloadButtonEnabled(bool flag)
+        {
+            tsUpload.Enabled = flag;
+            tsDownload.Enabled = flag;
+            downloadFileToolStripMenuItem.Enabled = flag;
+            uploadFiletoolStripMenuItem.Enabled = flag;
+        }
+
+        //--------------------Clean Up--------------------
+
         // cleans up all remote-views and disconnects from the server
         private void CleanUp()
         {
@@ -277,45 +365,11 @@ namespace EasyFTP
             tbRemotePath.Text = "";
         }
 
-        private void TvLocal_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
-        {
-            PopulateListViewLocal(e.Node);
-            tbLocalPath.Text = e.Node.Tag.ToString();
-        }
-
-        private void TreeViewRemote_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
-        {
-            PopulateListViewRemote(e.Node);
-            tbRemotePath.Text = e.Node.Tag.ToString();
-        }
-
-        private void Connect_Click(object sender, EventArgs e)
-        {
-            ConnectToFTP();
-        }
-
-        private void Disconnect_Click(object sender, EventArgs e)
-        {
-            CleanUp();
-        }
-        
-        private async void UploadFile_ClickAsync(object sender, EventArgs e)
-        {
-            if (await PerformTransfer(true))
-                PopulateListViewRemote();
-        }
-        
-        private async void DownloadFile_ClickAsync(object sender, EventArgs e)
-        {
-            if (await PerformTransfer(false))
-                PopulateListViewLocal();
-        }
+        //--------------------Transfer Files--------------------
 
         // Transfers (uploads/downloads) files from and to the ftp server.
         private async Task<bool> PerformTransfer(bool upload)
         {
-            ResetTimer();
-
             string pathLocal = "";
             string pathRemote = "";
 
@@ -339,10 +393,7 @@ namespace EasyFTP
             }
         }
 
-        private void Main_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            ftp.CloseUserSession();
-        }
+        //--------------------Timer--------------------
 
         /* Restarts the timer. Call this when user comes out of idle */
         public void ResetTimer()
@@ -361,6 +412,8 @@ namespace EasyFTP
             CleanUp();
             sessionTimer.Stop();
         }
+
+        //--------------------Context Menu--------------------
 
         /* Open contextMenu after MouseButton check */
         private void View_MouseDown(object sender, MouseEventArgs e)
@@ -381,15 +434,24 @@ namespace EasyFTP
         {
             ToolStripMenuItem menuItemUpload = new ToolStripMenuItem("&Upload File", null, UploadFile_ClickAsync);
             ToolStripMenuItem menuItemDownload = new ToolStripMenuItem("&Download File", null, DownloadFile_ClickAsync);
-            ToolStripMenuItem menuItemDelete = new ToolStripMenuItem("&Delete");
+            ToolStripMenuItem menuItemDelete = new ToolStripMenuItem("&Delete", null, DeleteFile_Click);
 
-            Control c = contextMenu1.SourceControl;
+            Control c = ((ContextMenuStrip)sender).SourceControl;
+
+            if (c != null)
+            {
+                // Save where the File/Directory should be deleted
+                menuItemDelete.Tag = c.Name;
+                FtpTrace.WriteLine(menuItemDelete.Tag.ToString());
+            }
 
             // Clear all previously added ToolStripMenuItems.
             contextMenu1.Items.Clear();
+
+            // Add the new ones
             if (c == tvLocal)
             {
-                contextMenu1.Items.Add(menuItemDelete);
+
             }
             else if (c == tvRemote)
             {
@@ -398,12 +460,15 @@ namespace EasyFTP
             else if (c == listViewLocal)
             {
                 contextMenu1.Items.Add(menuItemUpload);
-                contextMenu1.Items.Add(menuItemDelete);
             }
             else if (c == listViewRemote)
             {
                 contextMenu1.Items.Add(menuItemDownload);
             }
+
+            // Add "Delete" to all Menus
+            contextMenu1.Items.Add(menuItemDelete);
+
             e.Cancel = false;
         }
     }
