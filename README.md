@@ -1,4 +1,4 @@
 # EasyFTP
-An FTP-Manager
+An easy-to-use Ftp File-Manager
 
-This is a simple Ftp-Manager application i created mainly for practice purposes. Feel free to give advice, work on the code, contribute or just critisize me :P.
+I created this project mainly for practice purposes and also for fun. New features will be added on a regular basis. Feel free to give advice, or just critisize me :).
