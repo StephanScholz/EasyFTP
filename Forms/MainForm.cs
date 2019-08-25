@@ -26,7 +26,7 @@ namespace EasyFTP
 
         //--------------------Loading/Closing Events--------------------
         
-        private void Form1_Load(object sender, EventArgs e)
+        private void MainForm_Load(object sender, EventArgs e)
         {
             // custom debug console for FTP-connections
             FtpTrace.AddListener(new TextBoxListener(EasyConsole));
@@ -34,23 +34,8 @@ namespace EasyFTP
             FtpTrace.LogUserName = false;   // hide FTP user names
             FtpTrace.LogPassword = false;   // hide FTP passwords
 
-            // Load all drives
-            string[] drives = Environment.GetLogicalDrives();
-            // Update textbox
-            tbLocalPath.Text = drives[0];
-            foreach (string drive in drives)
-            {
-                DirectoryInfo info = new DirectoryInfo(drive);
-                if (info.Exists)
-                {
-                    TreeNode rootNode = new TreeNode(info.Name)
-                    {
-                        Tag = info
-                    };
-                    tvLocal.Nodes.Add(rootNode);
-                    rootNode.Nodes.Add(PLACEHOLDER);
-                }
-            }
+            // populates the local TreeView
+            PopulateTreeViewLocal();
         }
 
         private void Main_FormClosing(object sender, FormClosingEventArgs e)
@@ -66,7 +51,7 @@ namespace EasyFTP
             tbLocalPath.Text = e.Node.Tag.ToString();
         }
 
-        private void TreeViewRemote_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
+        private void TvRemote_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
         {
             PopulateListViewRemote(e.Node);
             tbRemotePath.Text = e.Node.Tag.ToString();
@@ -84,26 +69,74 @@ namespace EasyFTP
 
         private void DeleteFile_Click(object sender, EventArgs e)
         {
-            //TODO Implement Delete-Function
+            //TODO Test Delete-Function
             string cName = ((ToolStripMenuItem)sender).Tag.ToString();
+            string path = "";
 
             switch (cName)
             {
                 case "tvLocal":
-
+                    path = tbLocalPath.Text;
+                    if (CheckDelete(path, false))
+                    {
+                        if (Directory.Exists(path))
+                        {
+                            Directory.Delete(path, true);
+                            PopulateTreeViewLocal();
+                        }
+                    }
                     break;
 
                 case "tvRemote":
-
+                    path = tbRemotePath.Text;
+                    FtpTrace.WriteLine(path);
+                    if (CheckDelete(path, false))
+                    {
+                        ftp.Delete(path, true);
+                        PopulateTreeViewRemote();
+                    }
                     break;
 
                 case "listViewLocal":
-
+                    path = tbLocalPath.Text + "\\" + listViewLocal.SelectedItems[0].Text;
+                    if (CheckDelete(path, true))
+                    {
+                        if (File.Exists(path))
+                        {
+                            File.Delete(path);
+                            PopulateListViewLocal();
+                        }
+                    }
                     break;
 
                 case "listViewRemote":
-
+                    path = tbRemotePath.Text + "\\" + listViewRemote.SelectedItems[0].Text;
+                    FtpTrace.WriteLine(path);
+                    if (CheckDelete(path, true))
+                    {
+                        ftp.Delete(path, false);
+                        PopulateListViewRemote();
+                    }
                     break;
+            }
+        }
+
+        // Displays a responsive TextBox to ask for permission to delete files and directories
+        private bool CheckDelete(string path, bool isFile)
+        {
+            if (isFile)
+            {
+                return (MessageBox.Show(
+                        "Do you want to delete this file?\n\nPath: " + path,
+                        "Delete File",
+                        MessageBoxButtons.YesNo) == DialogResult.Yes);
+            }
+            else
+            {
+                return (MessageBox.Show(
+                        "Do you want to delete this directory and all its content?\n\nPath: " + path,
+                        "Delete Directory",
+                        MessageBoxButtons.YesNo) == DialogResult.Yes);
             }
         }
 
@@ -143,12 +176,36 @@ namespace EasyFTP
 
         private void PopulateTreeViewRemote()
         {
+            tvRemote.Nodes.Clear();
             TreeNode rootNode = new TreeNode("/")
             {
                 Tag = "/"
             };
             GetFtpDirectories(ftp.GetDirectoryListing("/"), rootNode);
             tvRemote.Nodes.Add(rootNode);
+            tbRemotePath.Text = "/";
+        }
+
+        private void PopulateTreeViewLocal()
+        {
+            tvLocal.Nodes.Clear();
+            // Load all drives
+            string[] drives = Environment.GetLogicalDrives();
+            // Update textbox
+            tbLocalPath.Text = drives[0];
+            foreach (string drive in drives)
+            {
+                DirectoryInfo info = new DirectoryInfo(drive);
+                if (info.Exists)
+                {
+                    TreeNode rootNode = new TreeNode(info.Name)
+                    {
+                        Tag = info
+                    };
+                    tvLocal.Nodes.Add(rootNode);
+                    rootNode.Nodes.Add(PLACEHOLDER);
+                }
+            }
         }
 
         /* Creates all sub-nodes in the Remote Tree, specified by the parameter "subDirs" and adds them to the nodeToAddTo */
@@ -283,10 +340,7 @@ namespace EasyFTP
                             if (di.GetDirectories().GetLength(0) > 0)
                                 node.Nodes.Add(null, PLACEHOLDER);
                         }
-                        catch (UnauthorizedAccessException ex)
-                        {
-                            MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        }
+                        catch (UnauthorizedAccessException) { }
                         catch (Exception ex)
                         {
                             MessageBox.Show(ex.Message, "ExplorerForm", MessageBoxButtons.OK, MessageBoxIcon.Error);

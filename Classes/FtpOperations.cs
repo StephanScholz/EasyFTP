@@ -110,6 +110,21 @@ namespace EasyFTP.Classes
             return ret;
         }
 
+        // Deletes a File or Directory (recursively) from the server
+        public void Delete(string remotePath, bool isDirectory)
+        {
+            if (isDirectory)
+            {
+                if (client.DirectoryExists(remotePath))
+                    client.DeleteDirectory(remotePath);
+            }
+            else
+            {
+                if (client.FileExists(remotePath))
+                    client.DeleteFile(remotePath);
+            }
+        }
+
         // Checks if the local and remote path are in correct order
         // and if all paths exist on the server and the local environment.
         private bool CheckPath(string path, bool local)
