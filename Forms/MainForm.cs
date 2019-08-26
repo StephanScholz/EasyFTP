@@ -121,6 +121,136 @@ namespace EasyFTP
             }
         }
 
+        //Starts editing the Label of the View (to rename files or directories)
+        private void RenameFile_Click(object sender, EventArgs e)
+        {
+            string cName = ((ToolStripMenuItem)sender).Tag.ToString();
+
+            switch (cName)
+            {
+                case "tvLocal":
+                    tvLocal.SelectedNode.BeginEdit();
+                    break;
+
+                case "tvRemote":
+                    tvRemote.SelectedNode.BeginEdit();
+                    break;
+
+                case "listViewLocal":
+                    listViewLocal.SelectedItems[0].BeginEdit();
+                    break;
+
+                case "listViewRemote":
+                    listViewRemote.SelectedItems[0].BeginEdit();
+                    break;
+            }
+        }
+
+        // Invoked after the Renaming of the respective Node or Item took place
+        private void tvLocal_AfterLabelEdit(object sender, NodeLabelEditEventArgs e)
+        {
+            // TODO Fix select while renaming problem
+            string oldPath = tbLocalPath.Text;
+            FtpTrace.WriteLine(oldPath);
+            // Checks if Label is in correct layout
+            if (CheckLabel(e.Label))
+            {
+                // Add the new Label to the newPath
+                string newPath = oldPath.Substring(0, oldPath.LastIndexOf('\\') + 1) + e.Label;
+                // Rename the directory on the local system
+                if (Directory.Exists(oldPath))
+                {
+                    Directory.Move(oldPath, newPath);
+                    e.Node.Name = e.Label;
+                    e.Node.Tag = newPath;
+                }
+
+                // Stop editing without canceling the label change.
+                e.Node.EndEdit(false);
+            }
+            else
+            {
+                /* Cancel the label edit action, inform the user, and 
+                   place the node in edit mode again. */
+                e.CancelEdit = true;
+                e.Node.BeginEdit();
+            }
+        }
+        // Invoked after the Renaming of the respective Node or Item took place
+        private void tvRemote_AfterLabelEdit(object sender, NodeLabelEditEventArgs e)
+        {
+            // Checks if Label is in correct layout
+            if (CheckLabel(e.Label))
+            {
+                // Stop editing without canceling the label change.
+                e.Node.EndEdit(false);
+            }
+            else
+            {
+                /* Cancel the label edit action, inform the user, and 
+                   place the node in edit mode again. */
+                e.CancelEdit = true;
+                e.Node.BeginEdit();
+            }
+        }
+        // Invoked after the Renaming of the respective Node or Item took place
+        private void listViewLocal_AfterLabelEdit(object sender, LabelEditEventArgs e)
+        {
+            // Checks if Label is in correct layout
+            if (CheckLabel(e.Label))
+            {
+                
+            }
+            else
+            {
+                // Cancel the label edit action
+                e.CancelEdit = true;
+            }
+        }
+        // Invoked after the Renaming of the respective Node or Item took place
+        private void listViewRemote_AfterLabelEdit(object sender, LabelEditEventArgs e)
+        {
+            // Checks if Label is in correct layout
+            if (CheckLabel(e.Label))
+            {
+
+            }
+            else
+            {
+                // Cancel the label edit action
+                e.CancelEdit = true;
+            }
+        }
+
+        // Checks if the Label has the correct Format and does not violate naming rules
+        private bool CheckLabel(string lab)
+        {
+            if (lab != null)
+            {
+                if (lab.Length > 0)
+                {
+                    if (lab.IndexOfAny(new char[] {'@', '.', ',', '!'}) == -1)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        MessageBox.Show("Invalid Name.\n" +
+                           "The invalid characters are: '@','.', ',', '!'",
+                           "Rename File or Directory");
+                        return false;
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Invalid Name.\nThe new name cannot be blank",
+                       "Rename File or Directory");
+                    return false;
+                }
+            }
+            return false;
+        }
+
         // Displays a responsive TextBox to ask for permission to delete files and directories
         private bool CheckDelete(string path, bool isFile)
         {
@@ -489,14 +619,15 @@ namespace EasyFTP
             ToolStripMenuItem menuItemUpload = new ToolStripMenuItem("&Upload File", null, UploadFile_ClickAsync);
             ToolStripMenuItem menuItemDownload = new ToolStripMenuItem("&Download File", null, DownloadFile_ClickAsync);
             ToolStripMenuItem menuItemDelete = new ToolStripMenuItem("&Delete", null, DeleteFile_Click);
+            ToolStripMenuItem menuItemRename = new ToolStripMenuItem("&Rename", null, RenameFile_Click);
 
             Control c = ((ContextMenuStrip)sender).SourceControl;
 
             if (c != null)
             {
-                // Save where the File/Directory should be deleted
+                // Save the View
                 menuItemDelete.Tag = c.Name;
-                FtpTrace.WriteLine(menuItemDelete.Tag.ToString());
+                menuItemRename.Tag = c.Name;
             }
 
             // Clear all previously added ToolStripMenuItems.
@@ -522,6 +653,8 @@ namespace EasyFTP
 
             // Add "Delete" to all Menus
             contextMenu1.Items.Add(menuItemDelete);
+            // Add "Rename" to all Menus
+            contextMenu1.Items.Add(menuItemRename);
 
             e.Cancel = false;
         }

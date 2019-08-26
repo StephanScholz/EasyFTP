@@ -125,6 +125,19 @@ namespace EasyFTP.Classes
             }
         }
 
+        //Renames a File or Directory on the server
+        public void Rename(string oldPath, string newPath)
+        {
+            if(client.DirectoryExists(oldPath))
+            {
+                client.MoveDirectory(oldPath, newPath);
+            }
+            else if (client.FileExists(oldPath))
+            {
+                client.MoveFile(oldPath, newPath);
+            }
+        }
+
         // Checks if the local and remote path are in correct order
         // and if all paths exist on the server and the local environment.
         private bool CheckPath(string path, bool local)
