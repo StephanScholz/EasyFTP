@@ -143,6 +143,7 @@
             this.tvLocal.SelectedImageIndex = 2;
             this.tvLocal.Size = new System.Drawing.Size(347, 149);
             this.tvLocal.TabIndex = 1;
+            this.tvLocal.BeforeLabelEdit += new System.Windows.Forms.NodeLabelEditEventHandler(this.BeforeLabelEdit);
             this.tvLocal.AfterLabelEdit += new System.Windows.Forms.NodeLabelEditEventHandler(this.tvLocal_AfterLabelEdit);
             this.tvLocal.BeforeExpand += new System.Windows.Forms.TreeViewCancelEventHandler(this.TvLocal_BeforeExpand);
             this.tvLocal.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.TvLocal_NodeMouseClick);
@@ -181,6 +182,7 @@
             this.listViewLocal.UseCompatibleStateImageBehavior = false;
             this.listViewLocal.View = System.Windows.Forms.View.Details;
             this.listViewLocal.AfterLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.listViewLocal_AfterLabelEdit);
+            this.listViewLocal.BeforeLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.BeforeLabelEdit);
             this.listViewLocal.MouseDown += new System.Windows.Forms.MouseEventHandler(this.View_MouseDown);
             // 
             // columnHeader1
@@ -256,6 +258,7 @@
             this.tvRemote.SelectedImageIndex = 0;
             this.tvRemote.Size = new System.Drawing.Size(347, 149);
             this.tvRemote.TabIndex = 4;
+            this.tvRemote.BeforeLabelEdit += new System.Windows.Forms.NodeLabelEditEventHandler(this.BeforeLabelEdit);
             this.tvRemote.AfterLabelEdit += new System.Windows.Forms.NodeLabelEditEventHandler(this.tvRemote_AfterLabelEdit);
             this.tvRemote.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.TvRemote_NodeMouseClick);
             this.tvRemote.MouseDown += new System.Windows.Forms.MouseEventHandler(this.View_MouseDown);
@@ -278,6 +281,7 @@
             this.listViewRemote.UseCompatibleStateImageBehavior = false;
             this.listViewRemote.View = System.Windows.Forms.View.Details;
             this.listViewRemote.AfterLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.listViewRemote_AfterLabelEdit);
+            this.listViewRemote.BeforeLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.BeforeLabelEdit);
             this.listViewRemote.MouseDown += new System.Windows.Forms.MouseEventHandler(this.View_MouseDown);
             // 
             // columnHeader4

@@ -126,15 +126,21 @@ namespace EasyFTP.Classes
         }
 
         //Renames a File or Directory on the server
-        public void Rename(string oldPath, string newPath)
+        public bool Rename(string oldPath, string newPath)
         {
             if(client.DirectoryExists(oldPath))
             {
                 client.MoveDirectory(oldPath, newPath);
+                return true;
             }
             else if (client.FileExists(oldPath))
             {
                 client.MoveFile(oldPath, newPath);
+                return true;
+            }
+            else
+            {
+                return false;
             }
         }
 

@@ -18,6 +18,7 @@ namespace EasyFTP
             InitializeComponent();
         }
 
+        // TODO Work on saving Userdata
         private void buttonDialogConfirm_Click(object sender, EventArgs e)
         {
             if (tbIP.Text == "")

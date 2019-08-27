@@ -13,6 +13,7 @@ namespace EasyFTP
     {
 
         private FtpOperations ftp;
+        private bool isRenaming = false;
 
         public MainForm()
         {
@@ -48,13 +49,17 @@ namespace EasyFTP
         private void TvLocal_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
         {
             PopulateListViewLocal(e.Node);
-            tbLocalPath.Text = e.Node.Tag.ToString();
+            // Only when not in Rename-Mode
+            if (!isRenaming)
+                tbLocalPath.Text = e.Node.Tag.ToString();
         }
 
         private void TvRemote_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
         {
             PopulateListViewRemote(e.Node);
-            tbRemotePath.Text = e.Node.Tag.ToString();
+            // Only when not in Rename-Mode
+            if (!isRenaming)
+                tbRemotePath.Text = e.Node.Tag.ToString();
         }
 
         private void Connect_Click(object sender, EventArgs e)
@@ -146,10 +151,15 @@ namespace EasyFTP
             }
         }
 
+        private void BeforeLabelEdit(object sender, EventArgs e)
+        {
+            isRenaming = true;
+        }
+
         // Invoked after the Renaming of the respective Node or Item took place
         private void tvLocal_AfterLabelEdit(object sender, NodeLabelEditEventArgs e)
         {
-            // TODO Fix select while renaming problem
+            // TODO Simplify AfterLabelEdits
             string oldPath = tbLocalPath.Text;
             FtpTrace.WriteLine(oldPath);
             // Checks if Label is in correct layout
@@ -163,43 +173,66 @@ namespace EasyFTP
                     Directory.Move(oldPath, newPath);
                     e.Node.Name = e.Label;
                     e.Node.Tag = newPath;
+                    tbLocalPath.Text = newPath;
                 }
 
                 // Stop editing without canceling the label change.
                 e.Node.EndEdit(false);
+                isRenaming = false;
             }
             else
             {
                 /* Cancel the label edit action, inform the user, and 
                    place the node in edit mode again. */
                 e.CancelEdit = true;
-                e.Node.BeginEdit();
+                if (e.Label != null)
+                    e.Node.BeginEdit();
             }
         }
         // Invoked after the Renaming of the respective Node or Item took place
         private void tvRemote_AfterLabelEdit(object sender, NodeLabelEditEventArgs e)
         {
+            string oldPath = tbRemotePath.Text;
             // Checks if Label is in correct layout
             if (CheckLabel(e.Label))
             {
+                // Add the new Label to the newPath
+                string newPath = oldPath.Substring(0, oldPath.LastIndexOf('/') + 1) + e.Label;
+                // Rename on server
+                if (ftp.Rename(oldPath, newPath))
+                    tbRemotePath.Text = newPath;
+                // set the new Tag
+                e.Node.Tag = newPath;
                 // Stop editing without canceling the label change.
                 e.Node.EndEdit(false);
+                isRenaming = false;
             }
             else
             {
                 /* Cancel the label edit action, inform the user, and 
                    place the node in edit mode again. */
                 e.CancelEdit = true;
-                e.Node.BeginEdit();
+                if (e.Label != null)
+                    e.Node.BeginEdit();
             }
         }
         // Invoked after the Renaming of the respective Node or Item took place
         private void listViewLocal_AfterLabelEdit(object sender, LabelEditEventArgs e)
         {
+            string oldPath = tbLocalPath.Text + "\\" + listViewLocal.Items[e.Item].Text;
             // Checks if Label is in correct layout
-            if (CheckLabel(e.Label))
+            if (CheckLabel(e.Label, true))
             {
-                
+                // Add the new Label to the newPath
+                string newPath = tbLocalPath.Text + "\\" + e.Label;
+                // Rename the directory on the local system
+                if (File.Exists(oldPath))
+                {
+                    File.Move(oldPath, newPath);
+                    listViewLocal.Items[e.Item].Text = e.Label;
+                    listViewLocal.Items[e.Item].Tag = newPath;
+                }
+                isRenaming = false;
             }
             else
             {
@@ -210,10 +243,19 @@ namespace EasyFTP
         // Invoked after the Renaming of the respective Node or Item took place
         private void listViewRemote_AfterLabelEdit(object sender, LabelEditEventArgs e)
         {
+            string oldPath = tbRemotePath.Text + "/" + listViewRemote.Items[e.Item].Text;
             // Checks if Label is in correct layout
-            if (CheckLabel(e.Label))
+            if (CheckLabel(e.Label, true))
             {
-
+                // Add the new Label to the newPath
+                string newPath = tbRemotePath.Text + "/" + e.Label;
+                // Rename on the server
+                if (ftp.Rename(oldPath, newPath))
+                {
+                    listViewRemote.Items[e.Item].Text = e.Label;
+                    listViewRemote.Items[e.Item].Tag = newPath;
+                }
+                isRenaming = false;
             }
             else
             {
@@ -223,22 +265,29 @@ namespace EasyFTP
         }
 
         // Checks if the Label has the correct Format and does not violate naming rules
-        private bool CheckLabel(string lab)
+        private bool CheckLabel(string lab, bool isFile = false)
         {
             if (lab != null)
             {
                 if (lab.Length > 0)
                 {
-                    if (lab.IndexOfAny(new char[] {'@', '.', ',', '!'}) == -1)
+                    if ((lab.IndexOfAny(new char[] {'@', '.', ',', '!'}) == -1))
                     {
                         return true;
                     }
                     else
                     {
-                        MessageBox.Show("Invalid Name.\n" +
+                        if (isFile)
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            MessageBox.Show("Invalid Name.\n" +
                            "The invalid characters are: '@','.', ',', '!'",
                            "Rename File or Directory");
-                        return false;
+                            return false;
+                        }
                     }
                 }
                 else
