@@ -1,4 +1,4 @@
-﻿namespace EasyFTP
+﻿namespace EasyFTP.Classes.View.Forms
 {
     partial class MainForm
     {
@@ -183,6 +183,7 @@
             this.listViewLocal.View = System.Windows.Forms.View.Details;
             this.listViewLocal.AfterLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.listViewLocal_AfterLabelEdit);
             this.listViewLocal.BeforeLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.BeforeLabelEdit);
+            this.listViewLocal.ItemSelectionChanged += new System.Windows.Forms.ListViewItemSelectionChangedEventHandler(this.listViewLocal_ItemSelectionChanged);
             this.listViewLocal.MouseDown += new System.Windows.Forms.MouseEventHandler(this.View_MouseDown);
             // 
             // columnHeader1
@@ -282,6 +283,7 @@
             this.listViewRemote.View = System.Windows.Forms.View.Details;
             this.listViewRemote.AfterLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.listViewRemote_AfterLabelEdit);
             this.listViewRemote.BeforeLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.BeforeLabelEdit);
+            this.listViewRemote.ItemSelectionChanged += new System.Windows.Forms.ListViewItemSelectionChangedEventHandler(this.listViewRemote_ItemSelectionChanged);
             this.listViewRemote.MouseDown += new System.Windows.Forms.MouseEventHandler(this.View_MouseDown);
             // 
             // columnHeader4

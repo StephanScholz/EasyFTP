@@ -50,27 +50,29 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Classes\User\Session.cs" />
+    <Compile Include="Classes\Model\BasicModel.cs" />
+    <Compile Include="Classes\Model\Modify.cs" />
+    <Compile Include="Classes\Model\Transfer.cs" />
     <Compile Include="Classes\FtpOperations.cs" />
     <Compile Include="Classes\TextBoxListener.cs" />
-    <Compile Include="Forms\MainForm.cs">
+    <Compile Include="Classes\View\Forms\MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\MainForm.Designer.cs">
+    <Compile Include="Classes\View\Forms\MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Forms\DialogConnect.cs">
+    <Compile Include="Classes\View\Forms\DialogConnect.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\DialogConnect.Designer.cs">
+    <Compile Include="Classes\View\Forms\DialogConnect.Designer.cs">
       <DependentUpon>DialogConnect.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="Forms\MainForm.resx">
+    <EmbeddedResource Include="Classes\View\Forms\MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\DialogConnect.resx">
+    <EmbeddedResource Include="Classes\View\Forms\DialogConnect.resx">
       <DependentUpon>DialogConnect.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
@@ -103,6 +105,9 @@
     <Content Include="Data\Folder.png" />
     <Content Include="Data\server.png" />
     <Content Include="Data\upload.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Classes\Interfaces\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

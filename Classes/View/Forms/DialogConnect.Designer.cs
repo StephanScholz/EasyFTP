@@ -1,4 +1,4 @@
-﻿namespace EasyFTP
+﻿namespace EasyFTP.Classes.View.Forms
 {
     partial class DialogConnect
     {

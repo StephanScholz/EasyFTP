@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace EasyFTP
+namespace EasyFTP.Classes.View.Forms
 {    public partial class DialogConnect : Form
     {
         public string[] credentials = new string[3];

@@ -1,4 +1,5 @@
 ﻿using EasyFTP.Classes;
+using EasyFTP.Classes.Model;
 using FluentFTP;
 using System;
 using System.ComponentModel;
@@ -7,13 +8,33 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace EasyFTP
+namespace EasyFTP.Classes.View.Forms
 {
     public partial class MainForm : Form
     {
 
         private FtpOperations ftp;
         private bool isRenaming = false;
+        // All transfer ops happen here
+        private Transfer transfer;
+        // All modifications concerning files and dirs happen here
+        private Modify modify;
+
+        // Returns the path of the respective TextBox
+        public string GetPathText(bool local)
+        {
+            if (local)
+            {
+                if (tbLocalPath != null)
+                    return tbLocalPath.Text;
+            }
+            else
+            {
+                if (tbRemotePath != null)
+                    return tbRemotePath.Text;
+            }
+            return "";
+        }
 
         public MainForm()
         {
@@ -35,6 +56,10 @@ namespace EasyFTP
             FtpTrace.LogUserName = false;   // hide FTP user names
             FtpTrace.LogPassword = false;   // hide FTP passwords
 
+            // Create Models
+            modify = new Modify(this);
+            transfer = new Transfer(this);
+
             // populates the local TreeView
             PopulateTreeViewLocal();
         }
@@ -45,6 +70,23 @@ namespace EasyFTP
         }
 
         //--------------------Click Events--------------------
+
+        private void listViewLocal_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
+        {
+            // TODO Working on restricting the drive directories, making them never changable
+            if (!listViewLocal.SelectedItems.IsBlank())
+                tbLocalPath.Text += "\\" + listViewLocal.SelectedItems[0].Text;
+            else
+                tbLocalPath.Text = tbLocalPath.Text.Substring(0, tbLocalPath.Text.LastIndexOf('\\'));
+        }
+
+        private void listViewRemote_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
+        {
+            if (!listViewRemote.SelectedItems.IsBlank())
+                tbRemotePath.Text += "\\" + listViewRemote.SelectedItems[0].Text;
+            else
+                tbRemotePath.Text = tbRemotePath.Text.Substring(0, tbRemotePath.Text.LastIndexOf('\\'));
+        }
 
         private void TvLocal_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
         {
@@ -76,54 +118,7 @@ namespace EasyFTP
         {
             //TODO Test Delete-Function
             string cName = ((ToolStripMenuItem)sender).Tag.ToString();
-            string path = "";
-
-            switch (cName)
-            {
-                case "tvLocal":
-                    path = tbLocalPath.Text;
-                    if (CheckDelete(path, false))
-                    {
-                        if (Directory.Exists(path))
-                        {
-                            Directory.Delete(path, true);
-                            PopulateTreeViewLocal();
-                        }
-                    }
-                    break;
-
-                case "tvRemote":
-                    path = tbRemotePath.Text;
-                    FtpTrace.WriteLine(path);
-                    if (CheckDelete(path, false))
-                    {
-                        ftp.Delete(path, true);
-                        PopulateTreeViewRemote();
-                    }
-                    break;
-
-                case "listViewLocal":
-                    path = tbLocalPath.Text + "\\" + listViewLocal.SelectedItems[0].Text;
-                    if (CheckDelete(path, true))
-                    {
-                        if (File.Exists(path))
-                        {
-                            File.Delete(path);
-                            PopulateListViewLocal();
-                        }
-                    }
-                    break;
-
-                case "listViewRemote":
-                    path = tbRemotePath.Text + "\\" + listViewRemote.SelectedItems[0].Text;
-                    FtpTrace.WriteLine(path);
-                    if (CheckDelete(path, true))
-                    {
-                        ftp.Delete(path, false);
-                        PopulateListViewRemote();
-                    }
-                    break;
-            }
+            modify.Delete(cName);
         }
 
         //Starts editing the Label of the View (to rename files or directories)
@@ -301,7 +296,7 @@ namespace EasyFTP
         }
 
         // Displays a responsive TextBox to ask for permission to delete files and directories
-        private bool CheckDelete(string path, bool isFile)
+        internal bool CheckDelete(string path, bool isFile)
         {
             if (isFile)
             {
@@ -353,7 +348,7 @@ namespace EasyFTP
 
         //--------------------TreeView/ListView--------------------
 
-        private void PopulateTreeViewRemote()
+        internal void PopulateTreeViewRemote()
         {
             tvRemote.Nodes.Clear();
             TreeNode rootNode = new TreeNode("/")
@@ -365,7 +360,7 @@ namespace EasyFTP
             tbRemotePath.Text = "/";
         }
 
-        private void PopulateTreeViewLocal()
+        internal void PopulateTreeViewLocal()
         {
             tvLocal.Nodes.Clear();
             // Load all drives
@@ -411,7 +406,7 @@ namespace EasyFTP
 
         /* Populates the ListView with the directories and files of the current selection
          * in the TreeView. "newSelected" default is always the SelectedNode of the respective TreeView*/
-        private void PopulateListViewLocal(TreeNode newSelected = null)
+        internal void PopulateListViewLocal(TreeNode newSelected = null)
         {
             // Default param
             if (newSelected == null) newSelected = tvLocal.SelectedNode;
@@ -452,7 +447,7 @@ namespace EasyFTP
         }
 
         /* Does the same as PopulateListViewLocal(), but with a Ftp directory structure */
-        private void PopulateListViewRemote(TreeNode newSelected = null)
+        internal void PopulateListViewRemote(TreeNode newSelected = null)
         {
             // Default param
             if (newSelected == null) newSelected = tvRemote.SelectedNode;
