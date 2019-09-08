@@ -71,37 +71,40 @@ namespace EasyFTP.Classes.View.Forms
 
         //--------------------Click Events--------------------
 
-        private void listViewLocal_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
+        // Updates the TextBoxes, containing the respective Paths of the selected objects
+        private void listView_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
         {
-            // TODO Working on restricting the drive directories, making them never changable
-            if (!listViewLocal.SelectedItems.IsBlank())
-                tbLocalPath.Text += "\\" + listViewLocal.SelectedItems[0].Text;
+            if (e.Item.Selected == true)
+            {
+                ListView lv = (ListView)sender;
+                TextBox tb = tbLocalPath;
+                if (lv == listViewRemote)
+                {
+                    tb = tbRemotePath;
+                }
+                tb.Text = lv.SelectedItems[0].Tag.ToString();
+            }
+        }
+
+        private void TreeView_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
+        {
+            // When renaming, do nothing
+            if (isRenaming) return;
+
+            TreeNode node = e.Node;
+            TreeView tv = (TreeView)sender;
+            // Local TreeView
+            if (tv == tvLocal)
+            {
+                PopulateListViewLocal(node);
+                tbLocalPath.Text = node.Tag.ToString();
+            }
+            // Remote TreeView
             else
-                tbLocalPath.Text = tbLocalPath.Text.Substring(0, tbLocalPath.Text.LastIndexOf('\\'));
-        }
-
-        private void listViewRemote_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
-        {
-            if (!listViewRemote.SelectedItems.IsBlank())
-                tbRemotePath.Text += "\\" + listViewRemote.SelectedItems[0].Text;
-            else
-                tbRemotePath.Text = tbRemotePath.Text.Substring(0, tbRemotePath.Text.LastIndexOf('\\'));
-        }
-
-        private void TvLocal_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
-        {
-            PopulateListViewLocal(e.Node);
-            // Only when not in Rename-Mode
-            if (!isRenaming)
-                tbLocalPath.Text = e.Node.Tag.ToString();
-        }
-
-        private void TvRemote_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
-        {
-            PopulateListViewRemote(e.Node);
-            // Only when not in Rename-Mode
-            if (!isRenaming)
-                tbRemotePath.Text = e.Node.Tag.ToString();
+            {
+                PopulateListViewRemote(node);
+                tbRemotePath.Text = node.Tag.ToString();
+            }
         }
 
         private void Connect_Click(object sender, EventArgs e)
@@ -121,7 +124,8 @@ namespace EasyFTP.Classes.View.Forms
             modify.Delete(cName);
         }
 
-        //Starts editing the Label of the View (to rename files or directories)
+        // Starts editing the Label of the View (to rename files or directories)
+        // Triggers only over the Context Menu Entry "Rename"
         private void RenameFile_Click(object sender, EventArgs e)
         {
             string cName = ((ToolStripMenuItem)sender).Tag.ToString();
@@ -152,28 +156,35 @@ namespace EasyFTP.Classes.View.Forms
         }
 
         // Invoked after the Renaming of the respective Node or Item took place
-        private void tvLocal_AfterLabelEdit(object sender, NodeLabelEditEventArgs e)
+        private void TreeView_AfterLabelEdit(object sender, NodeLabelEditEventArgs e)
         {
-            // TODO Simplify AfterLabelEdits
-            string oldPath = tbLocalPath.Text;
-            FtpTrace.WriteLine(oldPath);
             // Checks if Label is in correct layout
             if (CheckLabel(e.Label))
             {
-                // Add the new Label to the newPath
-                string newPath = oldPath.Substring(0, oldPath.LastIndexOf('\\') + 1) + e.Label;
-                // Rename the directory on the local system
-                if (Directory.Exists(oldPath))
+                bool remote = false;
+                TextBox tb = tbLocalPath;
+                string slash = "\\";
+                // If tvRemote
+                if ((TreeView)sender == tvRemote)
                 {
-                    Directory.Move(oldPath, newPath);
+                    remote = true;
+                    tb = tbRemotePath;
+                    slash = "/";
+                }
+
+                string oldPath = tb.Text;
+                // Add the new Label to the newPath
+                string newPath = oldPath.Substring(0, oldPath.LastIndexOf(slash) + 1) + e.Label;
+                // Rename Directory
+                if (modify.Rename(oldPath, newPath, e.Label, remote))
+                {
                     e.Node.Name = e.Label;
                     e.Node.Tag = newPath;
-                    tbLocalPath.Text = newPath;
+                    tb.Text = newPath;
                 }
 
                 // Stop editing without canceling the label change.
                 e.Node.EndEdit(false);
-                isRenaming = false;
             }
             else
             {
@@ -183,80 +194,38 @@ namespace EasyFTP.Classes.View.Forms
                 if (e.Label != null)
                     e.Node.BeginEdit();
             }
+            isRenaming = false;
         }
-        // Invoked after the Renaming of the respective Node or Item took place
-        private void tvRemote_AfterLabelEdit(object sender, NodeLabelEditEventArgs e)
+
+        private void ListView_AfterLabelEdit(object sender, LabelEditEventArgs e)
         {
-            string oldPath = tbRemotePath.Text;
-            // Checks if Label is in correct layout
-            if (CheckLabel(e.Label))
-            {
-                // Add the new Label to the newPath
-                string newPath = oldPath.Substring(0, oldPath.LastIndexOf('/') + 1) + e.Label;
-                // Rename on server
-                if (ftp.Rename(oldPath, newPath))
-                    tbRemotePath.Text = newPath;
-                // set the new Tag
-                e.Node.Tag = newPath;
-                // Stop editing without canceling the label change.
-                e.Node.EndEdit(false);
-                isRenaming = false;
-            }
-            else
-            {
-                /* Cancel the label edit action, inform the user, and 
-                   place the node in edit mode again. */
-                e.CancelEdit = true;
-                if (e.Label != null)
-                    e.Node.BeginEdit();
-            }
-        }
-        // Invoked after the Renaming of the respective Node or Item took place
-        private void listViewLocal_AfterLabelEdit(object sender, LabelEditEventArgs e)
-        {
-            string oldPath = tbLocalPath.Text + "\\" + listViewLocal.Items[e.Item].Text;
-            // Checks if Label is in correct layout
             if (CheckLabel(e.Label, true))
             {
-                // Add the new Label to the newPath
-                string newPath = tbLocalPath.Text + "\\" + e.Label;
-                // Rename the directory on the local system
-                if (File.Exists(oldPath))
+                bool remote = false;
+                TextBox tb = tbLocalPath;
+                string slash = "\\";
+                if ((ListView)sender == listViewRemote)
                 {
-                    File.Move(oldPath, newPath);
+                    remote = true;
+                    tb = tbRemotePath;
+                    slash = "/";
+                }
+
+                string oldPath = tb.Text;
+                // Add the new Label to the newPath
+                string newPath = oldPath.Substring(0, oldPath.LastIndexOf(slash) + 1) + e.Label;
+                if (modify.Rename(oldPath, newPath, e.Label, remote))
+                {
                     listViewLocal.Items[e.Item].Text = e.Label;
                     listViewLocal.Items[e.Item].Tag = newPath;
                 }
-                isRenaming = false;
             }
             else
             {
                 // Cancel the label edit action
                 e.CancelEdit = true;
             }
-        }
-        // Invoked after the Renaming of the respective Node or Item took place
-        private void listViewRemote_AfterLabelEdit(object sender, LabelEditEventArgs e)
-        {
-            string oldPath = tbRemotePath.Text + "/" + listViewRemote.Items[e.Item].Text;
-            // Checks if Label is in correct layout
-            if (CheckLabel(e.Label, true))
-            {
-                // Add the new Label to the newPath
-                string newPath = tbRemotePath.Text + "/" + e.Label;
-                // Rename on the server
-                if (ftp.Rename(oldPath, newPath))
-                {
-                    listViewRemote.Items[e.Item].Text = e.Label;
-                    listViewRemote.Items[e.Item].Tag = newPath;
-                }
-                isRenaming = false;
-            }
-            else
-            {
-                // Cancel the label edit action
-                e.CancelEdit = true;
-            }
+            isRenaming = false;
         }
 
         // Checks if the Label has the correct Format and does not violate naming rules
@@ -295,23 +264,10 @@ namespace EasyFTP.Classes.View.Forms
             return false;
         }
 
-        // Displays a responsive TextBox to ask for permission to delete files and directories
-        internal bool CheckDelete(string path, bool isFile)
+        // Displays a Messagebox asking for permission to do certain different operations
+        internal bool ConfirmOperation(string message, string title)
         {
-            if (isFile)
-            {
-                return (MessageBox.Show(
-                        "Do you want to delete this file?\n\nPath: " + path,
-                        "Delete File",
-                        MessageBoxButtons.YesNo) == DialogResult.Yes);
-            }
-            else
-            {
-                return (MessageBox.Show(
-                        "Do you want to delete this directory and all its content?\n\nPath: " + path,
-                        "Delete Directory",
-                        MessageBoxButtons.YesNo) == DialogResult.Yes);
-            }
+            return (MessageBox.Show(message, title, MessageBoxButtons.YesNo) == DialogResult.Yes);
         }
 
         // Async Events

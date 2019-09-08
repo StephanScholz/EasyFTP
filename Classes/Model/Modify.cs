@@ -23,7 +23,7 @@ namespace EasyFTP.Classes.Model
             {
                 case "tvLocal":
                     path = Form.GetPathText(true);
-                    if (Form.CheckDelete(path, false))
+                    if (Form.ConfirmOperation("Do you want to delete this file?", "Delete file"))
                     {
                         if (Directory.Exists(path))
                         {
@@ -35,7 +35,7 @@ namespace EasyFTP.Classes.Model
 
                 case "tvRemote":
                     path = Form.GetPathText(false);
-                    if (Form.CheckDelete(path, false))
+                    if (Form.ConfirmOperation("Do you want to delete this directory and all its content?", "Delete directory"))
                     {
                         Ftp.Delete(path, true);
                         Form.PopulateTreeViewRemote();
@@ -44,7 +44,7 @@ namespace EasyFTP.Classes.Model
 
                 case "listViewLocal":
                     path = Form.GetPathText(true);
-                    if (Form.CheckDelete(path, true))
+                    if (Form.ConfirmOperation("Do you want to delete this file?", "Delete file"))
                     {
                         if (File.Exists(path))
                         {
@@ -56,13 +56,40 @@ namespace EasyFTP.Classes.Model
 
                 case "listViewRemote":
                     path = Form.GetPathText(false);
-                    if (Form.CheckDelete(path, true))
+                    if (Form.ConfirmOperation("Do you want to delete this directory and all its content?", "Delete directory"))
                     {
                         Ftp.Delete(path, false);
                         Form.PopulateListViewRemote();
                     }
                     break;
             }
+        }
+
+        // Renames a File or directory. oldPath specifies the Full Name of the object before renaming,
+        // label specifies the new relative name of the label
+        internal bool Rename(string oldPath, string newPath, string label, bool remote)
+        {
+            if (!remote)
+            {
+                if (Directory.Exists(oldPath))
+                {
+                    Directory.Move(oldPath, newPath);
+                    return true;
+                }
+                else if (File.Exists(oldPath))
+                {
+                    File.Move(oldPath, newPath);
+                    return true;
+                }
+            }
+            else
+            {
+                if (Ftp.Rename(oldPath, newPath))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }

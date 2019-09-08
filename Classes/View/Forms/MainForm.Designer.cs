@@ -144,9 +144,9 @@
             this.tvLocal.Size = new System.Drawing.Size(347, 149);
             this.tvLocal.TabIndex = 1;
             this.tvLocal.BeforeLabelEdit += new System.Windows.Forms.NodeLabelEditEventHandler(this.BeforeLabelEdit);
-            this.tvLocal.AfterLabelEdit += new System.Windows.Forms.NodeLabelEditEventHandler(this.tvLocal_AfterLabelEdit);
+            this.tvLocal.AfterLabelEdit += new System.Windows.Forms.NodeLabelEditEventHandler(this.TreeView_AfterLabelEdit);
             this.tvLocal.BeforeExpand += new System.Windows.Forms.TreeViewCancelEventHandler(this.TvLocal_BeforeExpand);
-            this.tvLocal.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.TvLocal_NodeMouseClick);
+            this.tvLocal.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.TreeView_NodeMouseClick);
             this.tvLocal.MouseDown += new System.Windows.Forms.MouseEventHandler(this.View_MouseDown);
             // 
             // contextMenu1
@@ -181,9 +181,9 @@
             this.listViewLocal.TabIndex = 2;
             this.listViewLocal.UseCompatibleStateImageBehavior = false;
             this.listViewLocal.View = System.Windows.Forms.View.Details;
-            this.listViewLocal.AfterLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.listViewLocal_AfterLabelEdit);
+            this.listViewLocal.AfterLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.ListView_AfterLabelEdit);
             this.listViewLocal.BeforeLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.BeforeLabelEdit);
-            this.listViewLocal.ItemSelectionChanged += new System.Windows.Forms.ListViewItemSelectionChangedEventHandler(this.listViewLocal_ItemSelectionChanged);
+            this.listViewLocal.ItemSelectionChanged += new System.Windows.Forms.ListViewItemSelectionChangedEventHandler(this.listView_ItemSelectionChanged);
             this.listViewLocal.MouseDown += new System.Windows.Forms.MouseEventHandler(this.View_MouseDown);
             // 
             // columnHeader1
@@ -260,8 +260,8 @@
             this.tvRemote.Size = new System.Drawing.Size(347, 149);
             this.tvRemote.TabIndex = 4;
             this.tvRemote.BeforeLabelEdit += new System.Windows.Forms.NodeLabelEditEventHandler(this.BeforeLabelEdit);
-            this.tvRemote.AfterLabelEdit += new System.Windows.Forms.NodeLabelEditEventHandler(this.tvRemote_AfterLabelEdit);
-            this.tvRemote.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.TvRemote_NodeMouseClick);
+            this.tvRemote.AfterLabelEdit += new System.Windows.Forms.NodeLabelEditEventHandler(this.TreeView_AfterLabelEdit);
+            this.tvRemote.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.TreeView_NodeMouseClick);
             this.tvRemote.MouseDown += new System.Windows.Forms.MouseEventHandler(this.View_MouseDown);
             // 
             // listViewRemote
@@ -281,9 +281,9 @@
             this.listViewRemote.TabIndex = 5;
             this.listViewRemote.UseCompatibleStateImageBehavior = false;
             this.listViewRemote.View = System.Windows.Forms.View.Details;
-            this.listViewRemote.AfterLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.listViewRemote_AfterLabelEdit);
+            this.listViewRemote.AfterLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.ListView_AfterLabelEdit);
             this.listViewRemote.BeforeLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.BeforeLabelEdit);
-            this.listViewRemote.ItemSelectionChanged += new System.Windows.Forms.ListViewItemSelectionChangedEventHandler(this.listViewRemote_ItemSelectionChanged);
+            this.listViewRemote.ItemSelectionChanged += new System.Windows.Forms.ListViewItemSelectionChangedEventHandler(this.listView_ItemSelectionChanged);
             this.listViewRemote.MouseDown += new System.Windows.Forms.MouseEventHandler(this.View_MouseDown);
             // 
             // columnHeader4
