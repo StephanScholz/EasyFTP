@@ -119,7 +119,6 @@ namespace EasyFTP.Classes.View.Forms
 
         private void DeleteFile_Click(object sender, EventArgs e)
         {
-            //TODO Test Delete-Function
             string cName = ((ToolStripMenuItem)sender).Tag.ToString();
             modify.Delete(cName);
         }
@@ -197,6 +196,7 @@ namespace EasyFTP.Classes.View.Forms
             isRenaming = false;
         }
 
+        // Invoked after the Renaming of the respective ListViewItem took place
         private void ListView_AfterLabelEdit(object sender, LabelEditEventArgs e)
         {
             if (CheckLabel(e.Label, true))
@@ -264,7 +264,7 @@ namespace EasyFTP.Classes.View.Forms
             return false;
         }
 
-        // Displays a Messagebox asking for permission to do certain different operations
+        // Displays a Messagebox asking for permission to do certain operations
         internal bool ConfirmOperation(string message, string title)
         {
             return (MessageBox.Show(message, title, MessageBoxButtons.YesNo) == DialogResult.Yes);
@@ -276,7 +276,7 @@ namespace EasyFTP.Classes.View.Forms
         {
             try
             {
-                if (await PerformTransfer(true))
+                if (await transfer.PerformTransfer(true, tbLocalPath.Text, tbRemotePath.Text, progressBar1))
                 {
                     PopulateListViewRemote();
                 }
@@ -291,7 +291,7 @@ namespace EasyFTP.Classes.View.Forms
         {
             try
             {
-                if (await PerformTransfer(false))
+                if (await transfer.PerformTransfer(false, tbLocalPath.Text, tbRemotePath.Text, progressBar1))
                 {
                     PopulateListViewLocal();
                 }
@@ -549,34 +549,6 @@ namespace EasyFTP.Classes.View.Forms
             tbRemotePath.Text = "";
         }
 
-        //--------------------Transfer Files--------------------
-
-        // Transfers (uploads/downloads) files from and to the ftp server.
-        private async Task<bool> PerformTransfer(bool upload)
-        {
-            string pathLocal = "";
-            string pathRemote = "";
-
-            if (upload)
-            {
-                foreach (ListViewItem item in listViewLocal.SelectedItems)
-                {
-                    pathLocal = tbLocalPath.Text + "\\" + item.Text;
-                    pathRemote = tbRemotePath.Text + "/" + item.Text;
-                }
-                return await ftp.UploadFileAsync(pathLocal, pathRemote, progressBar1);
-            }
-            else
-            {
-                foreach (ListViewItem item in listViewRemote.SelectedItems)
-                {
-                    pathLocal = tbLocalPath.Text + "\\" + item.Text;
-                    pathRemote = tbRemotePath.Text + "/" + item.Text;
-                }
-                return await ftp.DownloadFileAsync(pathLocal, pathRemote, progressBar1);
-            }
-        }
-
         //--------------------Timer--------------------
 
         /* Restarts the timer. Call this when user comes out of idle */
@@ -616,6 +588,7 @@ namespace EasyFTP.Classes.View.Forms
          * actions to be performed, every view gets its own set of ToolStripMenuItems */
         private void ContextMenu1_Opening(object sender, CancelEventArgs e)
         {
+            // TODO: Implement Open, Refresh and Create Directory
             ToolStripMenuItem menuItemUpload = new ToolStripMenuItem("&Upload File", null, UploadFile_ClickAsync);
             ToolStripMenuItem menuItemDownload = new ToolStripMenuItem("&Download File", null, DownloadFile_ClickAsync);
             ToolStripMenuItem menuItemDelete = new ToolStripMenuItem("&Delete", null, DeleteFile_Click);

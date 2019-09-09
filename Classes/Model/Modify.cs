@@ -15,6 +15,8 @@ namespace EasyFTP.Classes.Model
 
         }
 
+        // Deletes a file or directory, cName specifies the Context menu, 
+        // which invokes the action
         internal void Delete(string cName)
         {
             string path = "";
